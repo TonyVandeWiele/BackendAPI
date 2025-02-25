@@ -1,4 +1,4 @@
-package com.hepl.backendapi.controller.controller;
+package com.hepl.backendapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
