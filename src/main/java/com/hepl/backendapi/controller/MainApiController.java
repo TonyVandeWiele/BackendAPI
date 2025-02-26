@@ -9,4 +9,8 @@ public class MainApiController {
     public String test() {
         return "Spring Boot Web Dependency Test Successful!";
     }
+    @GetMapping("/")
+    public String home() {
+        return "Welcome! This is the home page.";
+    }
 }
