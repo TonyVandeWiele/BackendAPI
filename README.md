@@ -57,18 +57,21 @@ src
 
 ---
 
-## 📦 Dépendances utilisées  
+## 📦 Dépendances utilisées
 
 | 📦 Dépendance | 🔍 Rôle |
 |--------------|--------|
 | `spring-boot-starter-web` | Création d’API REST |
 | `spring-boot-starter-data-jpa` | Gestion de la base de données avec JPA/Hibernate |
-| `spring-boot-starter-test` | Framework de tests (JUnit, Mockito, etc.) |
-| `springdoc-openapi-starter-webmvc-ui` | Génération automatique de la documentation OpenAPI (Swagger UI) |
-| `jackson-databind` | Sérialisation/Désérialisation JSON |
+| `mysql-connector-j` | Driver JDBC pour MySQL |
 | `lombok` | Réduction du boilerplate Java (Getters, Setters, etc.) |
+| `mapstruct` | Mapping d'objets Java |
+| `springdoc-openapi-starter-webmvc-ui` | Génération automatique de la documentation OpenAPI (Swagger UI) |
+| `spring-boot-starter-test` | Framework de tests (JUnit, Mockito, etc.) |
+| `spring-boot-devtools` | Outils de développement (reload à chaud) |
 
 ---
+
 
 ## 🔐 Sécurité  
 
@@ -93,6 +96,28 @@ src
 - **Java 21** installé  
 - **Maven** installé  
 - Base de données configurée dans `application.properties` ou `application.yaml`  
+
+## 🔑 Sécurisation des mots de passe
+
+Pour éviter d'exposer des informations sensibles comme les mots de passe dans le code, nous utilisons un fichier `.env` pour gérer les variables d'environnement.
+
+### Étapes pour configurer les mot de passe du projet :
+
+1. **Installer le plugin EnvFile (JetBrains IDEs)**
+    - Allez dans **File > Settings > Plugins**.
+    - Recherchez **EnvFile** et installez-le.
+    - Redémarrez l'IDE.
+
+2. **Créer le fichier `.env`**  
+   Dans la racine du projet, créez un fichier `.env` avec vos variables sensibles, par exemple :
+   ```env
+   DB_PASSWORD=votre_mot_de_passe
+
+3. **Configurer EnvFile dans votre IDE**
+    - Allez dans **Run > Edit Configurations**.
+    - Sélectionnez la configuration d'exécution de votre application (par exemple, Spring Boot).
+    - Dans l'onglet **EnvFile**, cochez la case **Enable EnvFile** et ajoutez votre fichier `.env`.
+
 
 ### **Démarrer l'application**  
 ```bash

@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: API BDServices & BDTransac
+  version: 1.0.0
+  description: >
+    API pour la gestion des clients, produits, stocks, commandes et suivi de livraison.
+    !!!Exemple des calls apis !!! Pas encore implémenté n'y définitif
+
+servers:
+  - url: https://apiserver-bsdfh4gmduh8bsep.francecentral-01.azurewebsites.net
+
+paths:
+  /products:
+    get:
+      summary: Liste des produits
+      responses:
+        '200':
+          description: Liste des produits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProduitSimple'
+
+  /products/{id}:
+    get:
+      summary: Détail d’un produit
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Détail complet du produit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProduitDetail'
+
+  /admin/products:
+    post:
+      summary: Ajouter un produit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NouveauProduit'
+      responses:
+        '201':
+          description: Produit créé
+
+  /admin/products/{id}:
+    put:
+      summary: Mettre à jour un produit
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MajProduit'
+      responses:
+        '200':
+          description: Produit mis à jour
+
+  /admin/stocks:
+    get:
+      summary: Liste des stocks
+      responses:
+        '200':
+          description: Liste des stocks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockSimple'
+
+  /admin/stocks/{productId}:
+    put:
+      summary: Modifier le stock d’un produit
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MajStock'
+      responses:
+        '200':
+          description: Stock mis à jour
+
+  /admin/orders:
+    get:
+      summary: Liste des commandes
+      responses:
+        '200':
+          description: Liste des commandes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommandeSimple'
+
+  /orders/{id}:
+    get:
+      summary: Détails d’une commande
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails de la commande
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandeDetail'
+
+  /admin/orders/{id}/status:
+    put:
+      summary: Modifier le statut d’une commande
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nouveau_statut:
+                  type: string
+      responses:
+        '200':
+          description: Statut mis à jour
+
+  /admin/orders/{id}/tracking:
+    put:
+      summary: Ajouter ou modifier le suivi d’une commande
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MajTracking'
+      responses:
+        '200':
+          description: Suivi mis à jour
+
+  /users/self:
+    get:
+      summary: Infos de l'utilisateur connecté
+      responses:
+        '200':
+          description: Détails utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientComplet'
+
+  /users/{id}:
+    get:
+      summary: Détail d’un utilisateur
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détail utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+
+components:
+  schemas:
+    Adresse:
+      type: object
+      properties:
+        rue:
+          type: string
+        ville:
+          type: string
+        code_postal:
+          type: string
+        pays:
+          type: string
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        nom:
+          type: string
+        email:
+          type: string
+        telephone:
+          type: string
+        adresse_id:
+          type: integer
+        date_inscription:
+          type: string
+          format: date
+        role:
+          type : string
+
+    ClientComplet:
+      allOf:
+        - $ref: '#/components/schemas/Client'
+        - type: object
+          properties:
+            adresse:
+              $ref: '#/components/schemas/Adresse'
+
+    ProduitSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+        nom:
+          type: string
+        prix:
+          type: number
+          format: float
+        categorie:
+          type: string
+        description:
+          type: string
+        stock:
+          type: integer
+
+    ProduitDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        nom:
+          type: string
+        prix:
+          type: number
+        description:
+          type: string
+        categorie:
+          type: object
+          properties:
+            id:
+              type: integer
+            nom:
+              type: string
+            description:
+              type: string
+        stock:
+          type: object
+          properties:
+            quantite_actuelle:
+              type: integer
+            stock_min:
+              type: integer
+            stock_max:
+              type: integer
+        derniere_mise_a_jour:
+          type: string
+          format: date
+
+    NouveauProduit:
+      type: object
+      required: [nom, prix, categorie_id, description, stock_initial]
+      properties:
+        nom:
+          type: string
+        prix:
+          type: number
+        categorie_id:
+          type: integer
+        description:
+          type: string
+        stock_initial:
+          type: integer
+
+    MajProduit:
+      type: object
+      properties:
+        nom:
+          type: string
+        prix:
+          type: number
+        description:
+          type: string
+
+    StockSimple:
+      type: object
+      properties:
+        produit_id:
+          type: integer
+        nom_produit:
+          type: string
+        quantite_actuelle:
+          type: integer
+        stock_min:
+          type: integer
+        stock_max:
+          type: integer
+
+    MajStock:
+      type: object
+      properties:
+        quantite_actuelle:
+          type: integer
+        stock_min:
+          type: integer
+        stock_max:
+          type: integer
+
+    CommandeSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        total:
+          type: number
+        statut:
+          type: string
+        mode_paiement:
+          type: string
+
+    ProduitCommande:
+      type: object
+      properties:
+        produit_id:
+          type: integer
+        nom:
+          type: string
+        quantite:
+          type: integer
+        prix_unitaire:
+          type: number
+
+    Tracking:
+      type: object
+      properties:
+        numero_suivi:
+          type: string
+        date_expedition:
+          type: string
+          format: date
+        date_livraison_estimee:
+          type: string
+          format: date
+        adresse_destination:
+          $ref: '#/components/schemas/Adresse'
+
+    MajTracking:
+      allOf:
+        - $ref: '#/components/schemas/Tracking'
+
+    CommandeDetail:
+      allOf:
+        - $ref: '#/components/schemas/CommandeSimple'
+        - type: object
+          properties:
+            produits:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProduitCommande'
+            tracking:
+              $ref: '#/components/schemas/Tracking'
