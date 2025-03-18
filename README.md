@@ -99,24 +99,10 @@ src
 
 ## 🔑 Sécurisation des mots de passe
 
-Pour éviter d'exposer des informations sensibles comme les mots de passe dans le code, nous utilisons un fichier `.env` pour gérer les variables d'environnement.
-
-### Étapes pour configurer les mot de passe du projet :
-
-1. **Installer le plugin EnvFile (JetBrains IDEs)**
-    - Allez dans **File > Settings > Plugins**.
-    - Recherchez **EnvFile** et installez-le.
-    - Redémarrez l'IDE.
-
-2. **Créer le fichier `.env`**  
-   Dans la racine du projet, créez un fichier `.env` avec vos variables sensibles, par exemple :
-   ```env
-   DB_PASSWORD=votre_mot_de_passe
-
-3. **Configurer EnvFile dans votre IDE**
-    - Allez dans **Run > Edit Configurations**.
-    - Sélectionnez la configuration d'exécution de votre application (par exemple, Spring Boot).
-    - Dans l'onglet **EnvFile**, cochez la case **Enable EnvFile** et ajoutez votre fichier `.env`.
+Pour éviter d'exposer des informations sensibles comme les mots de passe dans le code, nous utilisons un fichier 'application-password.yaml'
+spring:
+   datasource:
+      password: <DB_PASSWORD>
 
 
 ### **Démarrer l'application**  
@@ -124,6 +110,8 @@ Pour éviter d'exposer des informations sensibles comme les mots de passe dans l
 # Cloner le dépôt
 git clone https://github.com/votre-utilisateur/votre-repository.git
 cd votre-repository
+
+# Mettre le mot de passe pour le base de donnée (application-password.yaml)
 
 # Construire le projet
 mvn clean install
