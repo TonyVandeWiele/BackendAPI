@@ -24,13 +24,13 @@ public class StockEntity {
     private Long productId;
 
     @Column(name = "quantité")
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "stock_min")
-    private int minStock;
+    private Integer stockMin;
 
-    @Column(name = "stock_maj")
-    private int maxStock;
+    @Column(name = "stock_max")
+    private Integer stockMax;
 
     @Column(name = "date_maj")
     private LocalDateTime lastUpdated;

@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 public class StockDTO {
     private Long id;
     private String name;
-    private Long produitId;
-    private int quantity;
-    private int stockMin;
-    private int stockMax;
+    private Long productId;
+    private Integer quantity;
+    private Integer stockMin;
+    private Integer stockMax;
     private LocalDateTime lastUpdated;
 }

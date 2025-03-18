@@ -1,6 +1,6 @@
 package com.hepl.backendapi.service;
 
-import com.hepl.backendapi.RessourceNotFoundException;
+import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.dto.ProductDTO;
 import com.hepl.backendapi.entity.CategoryEntity;
 import com.hepl.backendapi.entity.ProductEntity;
@@ -30,7 +30,7 @@ public class ProductService {
         this.stockRepository = stockRepository;
     }
 
-    public List<ProductDTO> getAllProduct() {
+    public List<ProductDTO> getAllProducts() {
         List<ProductEntity> productEntityList = productRepository.findAll();
 
         return productMapper.toDTOList(productEntityList);  // Utilisation du mapper injecté
@@ -39,6 +39,18 @@ public class ProductService {
     public ProductDTO getProductById(Long id) {
         ProductEntity productEntity = productRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id));
         return productMapper.toDTO(productEntity);
+    }
+
+    public List<ProductDTO> getAllProductsByCategoryName(String name) {
+        List<ProductEntity> products = productRepository.findAllByCategoryName(name);
+        return productMapper.toDTOList(products);
+    }
+
+    public void deleteProductById(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id);
+        }
+        productRepository.deleteById(id);
     }
 
     public ProductDTO createProduct(ProductDTO productDTO) {
