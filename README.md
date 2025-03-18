@@ -58,7 +58,7 @@ src
 ---
 
 ## 📦 Dépendances utilisées
-
+ 
 | 📦 Dépendance | 🔍 Rôle |
 |--------------|--------|
 | `spring-boot-starter-web` | Création d’API REST |
