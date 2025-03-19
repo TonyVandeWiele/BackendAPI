@@ -78,6 +78,50 @@ src
 🔹 **Authentification JWT** pour protéger l'accès aux endpoints.  
 🔹 **Communication sécurisée** avec HTTPS (TLS).  
 
+[Client (mobile/web)]  
+│  
+▼  
+[Serveur d'authentification] ──→ [BD AUTH (NoSQL)]  
+│  
+▼ (JWT signé avec clé privée)  
+[Client (avec JWT)]  
+│  
+▼ (Cookie : JWT, TYPE : GET/POST/DELETE)  
+[API (Spring Boot)] ──→ [Serveur de certificats] (Récupère ou vérifie validité du certificat du serveur d'authentification)  
+│  
+▼  
+(Vérification signature JWT avec la clé publique du serveur d'authentification)  
+│  
+▼  
+[BD (MySQL/MongoDB)]
+
+
+
+## Explication du Flow
+
+1. **Authentification du client** :  
+   Le client (mobile/web) s'authentifie auprès du **serveur d'authentification**. Ce serveur vérifie les identifiants et interagit avec la **base de données NoSQL** pour valider l'utilisateur.
+
+2. **Génération du JWT** :  
+   Une fois l'utilisateur validé, le **serveur d'authentification** génère un **JWT signé** avec sa **clé privée** et le renvoie au client.
+
+3. **Envoi du JWT au client** :  
+   Le **client** reçoit le JWT et l'utilise pour s'authentifier dans les futures requêtes API. Le JWT est souvent stocké dans un **cookie** et envoyé dans les requêtes de type **GET/POST/DELETE**.
+
+4. **Vérification du certificat du serveur** :  
+   L'**API** (généralement une application Spring Boot) contacte le **serveur de certificats** pour récupérer ou vérifier la validité du certificat SSL/TLS du **serveur d'authentification**.
+
+5. **Vérification de la signature JWT** :  
+   Une fois la validité du certificat vérifiée, l'API utilise la **clé publique du serveur d'authentification** pour valider la signature du **JWT** et s'assurer qu'il n'a pas été falsifié.
+
+6. **Accès à la base de données** :  
+   Après validation du JWT, l'API peut interagir avec la **base de données** (MySQL/MongoDB) pour récupérer ou stocker les informations de l'utilisateur.
+
+## Sécurité
+
+- **Clé privée/clé publique** : La sécurité de l'authentification repose sur la clé privée du serveur d'authentification pour signer les JWT et la clé publique pour les vérifier.
+- **Cookies sécurisés** : Les JWT sont envoyés dans des cookies sécurisés avec des attributs comme `HttpOnly` et `Secure` pour éviter les attaques XSS.
+
 ---
 
 ## 🌍 API Endpoint  
