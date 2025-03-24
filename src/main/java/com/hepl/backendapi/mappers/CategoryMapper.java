@@ -1,7 +1,7 @@
 package com.hepl.backendapi.mappers;
 
 import com.hepl.backendapi.dto.CategoryDTO;
-import com.hepl.backendapi.entity.CategoryEntity;
+import com.hepl.backendapi.entity.dbservices.CategoryEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;

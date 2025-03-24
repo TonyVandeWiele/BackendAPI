@@ -2,10 +2,10 @@ package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.dto.UserDTO;
-import com.hepl.backendapi.entity.StockEntity;
-import com.hepl.backendapi.entity.UserEntity;
+import com.hepl.backendapi.entity.dbservices.StockEntity;
+import com.hepl.backendapi.entity.dbservices.UserEntity;
 import com.hepl.backendapi.mappers.UserMapper;
-import com.hepl.backendapi.repository.UserRepository;
+import com.hepl.backendapi.repository.dbservices.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

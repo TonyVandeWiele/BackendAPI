@@ -1,7 +1,7 @@
-package com.hepl.backendapi.entity;
+package com.hepl.backendapi.entity.dbservices;
 
-import com.hepl.backendapi.utils.MaritalStatus;
-import com.hepl.backendapi.utils.SexeEnum;
+import com.hepl.backendapi.utils.enumeration.MaritalStatus;
+import com.hepl.backendapi.utils.enumeration.SexeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 

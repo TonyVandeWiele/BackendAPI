@@ -1,7 +1,7 @@
 package com.hepl.backendapi.mappers;
 
 import com.hepl.backendapi.dto.ProductDTO;
-import com.hepl.backendapi.entity.ProductEntity;
+import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

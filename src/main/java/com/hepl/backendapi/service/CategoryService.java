@@ -2,9 +2,9 @@ package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.dto.CategoryDTO;
-import com.hepl.backendapi.entity.CategoryEntity;
+import com.hepl.backendapi.entity.dbservices.CategoryEntity;
 import com.hepl.backendapi.mappers.CategoryMapper;
-import com.hepl.backendapi.repository.CategoryRepository;
+import com.hepl.backendapi.repository.dbservices.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,8 +1,8 @@
 package com.hepl.backendapi.dto;
 
 
-import com.hepl.backendapi.utils.MaritalStatus;
-import com.hepl.backendapi.utils.SexeEnum;
+import com.hepl.backendapi.utils.enumeration.MaritalStatus;
+import com.hepl.backendapi.utils.enumeration.SexeEnum;
 import lombok.*;
 
 import java.time.LocalDate;

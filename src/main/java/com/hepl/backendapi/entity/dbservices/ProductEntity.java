@@ -1,4 +1,4 @@
-package com.hepl.backendapi.entity;
+package com.hepl.backendapi.entity.dbservices;
 
 import jakarta.persistence.*;
 import lombok.*;

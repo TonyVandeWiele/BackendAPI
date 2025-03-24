@@ -1,13 +1,7 @@
 package com.hepl.backendapi.controller;
 
-import com.hepl.backendapi.dto.CategoryDTO;
-import com.hepl.backendapi.dto.ProductDTO;
-import com.hepl.backendapi.dto.StockDTO;
-import com.hepl.backendapi.dto.UserDTO;
-import com.hepl.backendapi.service.CategoryService;
-import com.hepl.backendapi.service.ProductService;
-import com.hepl.backendapi.service.StockService;
-import com.hepl.backendapi.service.UserService;
+import com.hepl.backendapi.dto.*;
+import com.hepl.backendapi.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +17,15 @@ public class MainApiController {
     private final CategoryService categoryService;
     private final StockService stockService;
     private final UserService userService;
+    private final OrderService orderService;
 
     @Autowired
-    public MainApiController(ProductService productService, CategoryService categoryService, StockService stockService, UserService userService) {
+    public MainApiController(ProductService productService, CategoryService categoryService, StockService stockService, UserService userService, OrderService orderService) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.stockService = stockService;
         this.userService = userService;
+        this.orderService = orderService;
     }
 
     @GetMapping("/")
@@ -63,6 +59,7 @@ public class MainApiController {
         productService.deleteProductById(id);
     }
 
+
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryDTO>> fetchAllCategory() {
         return ResponseEntity.ok(categoryService.getAllCategories());
@@ -74,17 +71,33 @@ public class MainApiController {
     }
 
     @GetMapping("/stocks")
-    public ResponseEntity<List<StockDTO>> findAllStocks() {
+    public ResponseEntity<List<StockDTO>> fetchAllStocks() {
         return ResponseEntity.ok(stockService.getAllStocks());
     }
 
     @GetMapping("/stock/{id}")
-    public ResponseEntity<StockDTO> findStockById(@PathVariable Long id) {
+    public ResponseEntity<StockDTO> fecthStockById(@PathVariable Long id) {
         return ResponseEntity.ok(stockService.getStockById(id));
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<UserDTO> findUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> fetchUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderDTO>> fetchAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    @GetMapping("/orders/{id}")
+    public ResponseEntity<OrderDTO> fetchOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
+    }
+
+    @GetMapping("/order/{orderId}/products")
+    public ResponseEntity<List<ProductDTO>> fetchAllProductsByOrderId(@PathVariable Long orderId) {
+        List<ProductDTO> products = productService.getAllProductsByOrderId(orderId);
+        return ResponseEntity.ok(products);
     }
 }

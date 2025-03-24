@@ -2,9 +2,9 @@ package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.dto.StockDTO;
-import com.hepl.backendapi.entity.StockEntity;
+import com.hepl.backendapi.entity.dbservices.StockEntity;
 import com.hepl.backendapi.mappers.StockMapper;
-import com.hepl.backendapi.repository.StockRepository;
+import com.hepl.backendapi.repository.dbservices.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

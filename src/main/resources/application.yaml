@@ -9,8 +9,16 @@ spring:
     import: "application-password.yaml"
 
   datasource:
-    url: jdbc:mysql://bd1.masmzi.icu:3306/dbservices
-    username: api
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    services:
+      jdbc-url: jdbc:mysql://bd1.masmzi.icu:3306/dbservices
+      username: api
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+    transac:
+      jdbc-url: jdbc:mysql://bd1.masmzi.icu:3306/dbtransac
+      username: api
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+
 
 

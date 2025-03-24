@@ -1,6 +1,6 @@
-package com.hepl.backendapi.repository;
+package com.hepl.backendapi.repository.dbservices;
 
-import com.hepl.backendapi.entity.ProductEntity;
+import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

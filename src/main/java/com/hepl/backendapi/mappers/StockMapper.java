@@ -1,7 +1,7 @@
 package com.hepl.backendapi.mappers;
 
 import com.hepl.backendapi.dto.StockDTO;
-import com.hepl.backendapi.entity.StockEntity;
+import com.hepl.backendapi.entity.dbservices.StockEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;

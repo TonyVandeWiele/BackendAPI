@@ -55,7 +55,7 @@ src
 ✅ **Gestion simplifiée des dépendances** (Maven / Gradle)  
 ✅ **Framework populaire en entreprise** avec **grande communauté** et **documentation abondante**  
 
----
+---'
 
 ## 📦 Dépendances utilisées
  
