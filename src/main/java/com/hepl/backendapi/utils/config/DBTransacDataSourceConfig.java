@@ -12,6 +12,9 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 @Configuration
@@ -35,7 +38,12 @@ public class DBTransacDataSourceConfig {
         factory.setDataSource(dataSource);
         factory.setPackagesToScan("com.hepl.backendapi.entity.dbtransac");
         factory.setPersistenceUnitName("transac");
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        factory.setJpaPropertyMap(properties);
         return factory;
     }
 
