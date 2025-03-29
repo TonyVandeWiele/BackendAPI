@@ -10,15 +10,15 @@ spring:
 
   datasource:
     services:
-      jdbc-url: jdbc:mysql://bd1.masmzi.icu:3306/dbservices
-      username: api
+      jdbc-url: jdbc:mysql://localhost:3306/dbservices
+      username: masi
       driver-class-name: com.mysql.cj.jdbc.Driver
 
     transac:
-      jdbc-url: jdbc:mysql://bd1.masmzi.icu:3306/dbtransac
-      username: api
+      jdbc-url: jdbc:mysql://localhost:3306/dbtransac
+      username: masi
       driver-class-name: com.mysql.cj.jdbc.Driver
-
-
-
-
+    jpa:
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQL8.Dialect
