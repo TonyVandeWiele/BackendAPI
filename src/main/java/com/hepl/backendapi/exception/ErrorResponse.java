@@ -1,7 +1,6 @@
 package com.hepl.backendapi.exception;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Entity;
 import lombok.*;
 
 import java.time.LocalDateTime;

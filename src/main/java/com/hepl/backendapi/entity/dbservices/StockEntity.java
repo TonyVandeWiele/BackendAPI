@@ -1,7 +1,6 @@
 package com.hepl.backendapi.entity.dbservices;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
 
 import java.time.LocalDateTime;

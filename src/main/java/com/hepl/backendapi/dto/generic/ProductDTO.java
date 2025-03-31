@@ -1,6 +1,6 @@
 package com.hepl.backendapi.dto.generic;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import lombok.*;
 
 @Setter

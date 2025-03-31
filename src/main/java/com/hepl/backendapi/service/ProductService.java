@@ -1,13 +1,12 @@
 package com.hepl.backendapi.service;
 
-import com.hepl.backendapi.dto.generic.StockDTO;
+import com.hepl.backendapi.dto.generic.ProductDTO;
 import com.hepl.backendapi.dto.post.ProductCreateDTO;
 import com.hepl.backendapi.entity.dbservices.CategoryEntity;
 import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import com.hepl.backendapi.entity.dbservices.StockEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
-import com.hepl.backendapi.dto.generic.ProductDTO;
 import com.hepl.backendapi.mappers.OrderItemMapper;
 import com.hepl.backendapi.mappers.ProductMapper;
 import com.hepl.backendapi.repository.dbservices.CategoryRepository;

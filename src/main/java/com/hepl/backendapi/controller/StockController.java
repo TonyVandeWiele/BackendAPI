@@ -5,8 +5,6 @@ import com.hepl.backendapi.service.StockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +39,7 @@ public class StockController {
     @ApiResponse(responseCode = "200", description = "Stock quantity updated succefully")
     @PutMapping("/stock/{productId}")
     public ResponseEntity<StockDTO> updateStock(@PathVariable Long productId, @RequestBody Integer quantity) {
-        StockDTO updatedStock= stockService.updateStock(productId, quantity);
+        StockDTO updatedStock = stockService.updateStock(productId, quantity);
         return ResponseEntity.ok(updatedStock);
     }
 }

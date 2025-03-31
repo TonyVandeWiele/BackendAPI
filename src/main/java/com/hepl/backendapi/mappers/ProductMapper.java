@@ -4,7 +4,6 @@ import com.hepl.backendapi.dto.generic.ProductDTO;
 import com.hepl.backendapi.dto.post.ProductCreateDTO;
 import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 import java.util.List;
 

@@ -1,7 +1,6 @@
 package com.hepl.backendapi.dto.post;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hepl.backendapi.dto.generic.AddressDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 

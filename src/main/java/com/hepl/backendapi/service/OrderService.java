@@ -1,15 +1,14 @@
 package com.hepl.backendapi.service;
 
-import com.hepl.backendapi.dto.generic.AddressDTO;
 import com.hepl.backendapi.dto.generic.OrderDTO;
 import com.hepl.backendapi.dto.generic.TrackingDTO;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.dto.post.OrderCreateDTO;
 import com.hepl.backendapi.dto.post.OrderItemCreateDTO;
 import com.hepl.backendapi.entity.dbservices.AddressEntity;
+import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import com.hepl.backendapi.entity.dbservices.StockEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderEntity;
-import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.entity.dbtransac.TrackingEntity;
 import com.hepl.backendapi.exception.DuplicateProductIdException;
@@ -25,25 +24,17 @@ import com.hepl.backendapi.repository.dbtransac.TrackingRepository;
 import com.hepl.backendapi.utils.compositekey.OrderItemId;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.FlushModeType;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Propagation;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static jakarta.transaction.Transactional.TxType.MANDATORY;
 
 @Service
 public class OrderService {
