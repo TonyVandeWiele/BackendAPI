@@ -13,6 +13,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(
@@ -36,6 +37,9 @@ public class DBTransacDataSourceConfig {
         factory.setPackagesToScan("com.hepl.backendapi.entity.dbtransac");
         factory.setPersistenceUnitName("transac");
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        Properties properties = new Properties();
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        factory.setJpaProperties(properties);
         return factory;
     }
 

@@ -1,4 +1,4 @@
-package com.hepl.backendapi.dto;
+package com.hepl.backendapi.dto.generic;
 
 import lombok.*;
 
@@ -7,11 +7,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDTO {
+public class CategoryDTO {
     private Long id;
     private String name;
-    private Double price;
     private String description;
-    private Long categoryId;
-    private Long stockId;
 }

@@ -1,40 +1,44 @@
 package com.hepl.backendapi.service;
 
+import com.hepl.backendapi.dto.generic.StockDTO;
+import com.hepl.backendapi.dto.post.ProductCreateDTO;
 import com.hepl.backendapi.entity.dbservices.CategoryEntity;
 import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import com.hepl.backendapi.entity.dbservices.StockEntity;
-import com.hepl.backendapi.entity.dbtransac.OrderLinesEntity;
+import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
-import com.hepl.backendapi.dto.ProductDTO;
-import com.hepl.backendapi.mappers.OrderLinesMapper;
+import com.hepl.backendapi.dto.generic.ProductDTO;
+import com.hepl.backendapi.mappers.OrderItemMapper;
 import com.hepl.backendapi.mappers.ProductMapper;
 import com.hepl.backendapi.repository.dbservices.CategoryRepository;
 import com.hepl.backendapi.repository.dbservices.ProductRepository;
 import com.hepl.backendapi.repository.dbservices.StockRepository;
-import com.hepl.backendapi.repository.dbtransac.OrderLinesRepository;
+import com.hepl.backendapi.repository.dbtransac.OrderItemRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final OrderLinesMapper orderLinesMapper;
+    private final OrderItemMapper orderItemMapper;
 
     private final CategoryRepository categoryRepository;
     private final StockRepository stockRepository;
-    private final OrderLinesRepository orderLinesRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper, OrderLinesMapper orderLinesMapper, CategoryRepository categoryRepository, StockRepository stockRepository, OrderLinesRepository orderLinesRepository) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper, OrderItemMapper orderItemMapper, CategoryRepository categoryRepository, StockRepository stockRepository, OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
-        this.orderLinesMapper = orderLinesMapper;
+        this.orderItemMapper = orderItemMapper;
         this.categoryRepository = categoryRepository;
         this.stockRepository = stockRepository;
-        this.orderLinesRepository = orderLinesRepository;
+        this.orderItemRepository = orderItemRepository;
 
     }
 
@@ -56,7 +60,7 @@ public class ProductService {
 
     public List<ProductDTO> getAllProductsByOrderId(Long orderId) {
         // 1. On récupère les productId via la base dbtransac
-        List<OrderLinesEntity> orderLines = orderLinesRepository.findAllByIdOrderId(orderId);
+        List<OrderItemEntity> orderLines = orderItemRepository.findAllByIdOrderId(orderId);
 
         List<Long> productIds = orderLines.stream()
                 .map(line -> line.getId().getProductId())
@@ -79,20 +83,34 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    public ProductDTO createProduct(ProductDTO productDTO) {
-        ProductEntity product = productMapper.toEntity(productDTO);
+    @Transactional
+    public ProductDTO createProduct(ProductCreateDTO productCreateDTO) {
 
-        // Associer les entités liées à partir des IDs
-        CategoryEntity category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new RessourceNotFoundException(CategoryEntity.class.getSimpleName(), productDTO.getCategoryId()));
-        StockEntity stock = stockRepository.findById(productDTO.getStockId())
-                .orElseThrow(() -> new RessourceNotFoundException(StockEntity.class.getSimpleName(), productDTO.getStockId()));
+        // Check if category exist
+        CategoryEntity category = categoryRepository.findById(productCreateDTO.getCategoryId())
+                .orElseThrow(() -> new RessourceNotFoundException(CategoryEntity.class.getSimpleName(), productCreateDTO.getCategoryId()));
 
-        product.setCategory(category);
-        product.setStock(stock);
+        StockEntity stock = StockEntity.builder().
+                stockMax(productCreateDTO.getStockMax()).
+                stockMin(productCreateDTO.getStockMin()).
+                quantity(productCreateDTO.getQuantity()).
+                lastUpdated(LocalDateTime.now()).
+                build();
+        StockEntity stockSaved = stockRepository.save(stock);
 
-        ProductEntity saved = productRepository.save(product);
-        return productMapper.toDTO(saved);
+        ProductEntity product = ProductEntity.builder()
+                .category(category)
+                .description(productCreateDTO.getDescription())
+                .price(productCreateDTO.getPrice())
+                .name(productCreateDTO.getName())
+                .stock(stockSaved)
+                .build();
+        ProductEntity productSaved = productRepository.save(product);
+
+        stock.setProductId(productSaved.getId());
+        stockRepository.save(stock);
+
+        return productMapper.toDTO(productSaved);
     }
 
 }

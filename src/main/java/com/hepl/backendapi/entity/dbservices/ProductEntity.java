@@ -30,7 +30,7 @@ public class ProductEntity {
         private CategoryEntity category;
 
 
-        @ManyToOne(fetch = FetchType.LAZY)
+        @OneToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "stock_id")
         private StockEntity stock;
 }

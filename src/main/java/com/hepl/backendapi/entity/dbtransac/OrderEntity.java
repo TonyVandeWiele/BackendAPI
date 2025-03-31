@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -24,7 +25,7 @@ public class OrderEntity {
     private LocalDate order_date;
 
     @Column(name = "order_time")
-    private LocalDateTime order_time;
+    private LocalTime order_time;
 
     @Column(name = "total")
     private Double total;
@@ -36,6 +37,13 @@ public class OrderEntity {
     @Column(name = "bank_name")
     private String bank_name;
 
-    @Column(name = "tracking_id")
-    private String tracking_id;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "tracking_id", referencedColumnName = "id")
+    private TrackingEntity tracking;
+
+    @Column(name = "address_id")
+    private Long address_id;
+
+    @Column(name = "client_id")
+    private Long client_id;
 }

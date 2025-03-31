@@ -1,8 +1,7 @@
 package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.exception.RessourceNotFoundException;
-import com.hepl.backendapi.dto.UserDTO;
-import com.hepl.backendapi.entity.dbservices.StockEntity;
+import com.hepl.backendapi.dto.generic.UserDTO;
 import com.hepl.backendapi.entity.dbservices.UserEntity;
 import com.hepl.backendapi.mappers.UserMapper;
 import com.hepl.backendapi.repository.dbservices.UserRepository;
@@ -21,7 +20,7 @@ public class UserService {
     }
 
     public UserDTO getUserById(long id) {
-        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(StockEntity.class.getSimpleName(), id));
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(UserEntity.class.getSimpleName(), id));
         return userMapper.toUserDTO(userEntity);
     }
 }

@@ -1,9 +1,12 @@
 package com.hepl.backendapi.service;
 
+import com.hepl.backendapi.dto.generic.ProductDTO;
+import com.hepl.backendapi.entity.dbservices.ProductEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
-import com.hepl.backendapi.dto.StockDTO;
+import com.hepl.backendapi.dto.generic.StockDTO;
 import com.hepl.backendapi.entity.dbservices.StockEntity;
 import com.hepl.backendapi.mappers.StockMapper;
+import com.hepl.backendapi.repository.dbservices.ProductRepository;
 import com.hepl.backendapi.repository.dbservices.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,11 +17,13 @@ import java.util.List;
 public class StockService {
     private final StockRepository stockRepository;
     private final StockMapper stockMapper;
+    private final ProductRepository productRepository;
 
     @Autowired
-    public StockService(StockRepository stockRepository, StockMapper stockMapper) {
+    public StockService(StockRepository stockRepository, StockMapper stockMapper, ProductRepository productRepository) {
         this.stockRepository = stockRepository;
         this.stockMapper = stockMapper;
+        this.productRepository = productRepository;
     }
 
     public List<StockDTO> getAllStocks() {
@@ -32,4 +37,12 @@ public class StockService {
         return stockMapper.toStockDTO(stock);
     }
 
+    public StockDTO updateStock(Long productId, Integer quantity)
+    {
+        StockEntity stockEntity = stockRepository.findByProductId(productId).orElseThrow(() -> new RessourceNotFoundException("This product does have a stock", productId));
+        stockEntity.setQuantity(quantity);
+        stockRepository.save(stockEntity);
+
+        return stockMapper.toStockDTO(stockEntity);
+    }
 }

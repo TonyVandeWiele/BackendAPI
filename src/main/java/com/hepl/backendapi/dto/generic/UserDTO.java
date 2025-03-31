@@ -1,4 +1,4 @@
-package com.hepl.backendapi.dto;
+package com.hepl.backendapi.dto.generic;
 
 
 import com.hepl.backendapi.utils.enumeration.MaritalStatus;

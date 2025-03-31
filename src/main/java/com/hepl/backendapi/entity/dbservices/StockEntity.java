@@ -1,6 +1,7 @@
 package com.hepl.backendapi.entity.dbservices;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,9 +18,6 @@ public class StockEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "Nom")
-    private String name;
-
     @Column(name = "produit_id")
     private Long productId;
 
@@ -34,4 +32,5 @@ public class StockEntity {
 
     @Column(name = "date_maj")
     private LocalDateTime lastUpdated;
+
 }

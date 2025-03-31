@@ -7,4 +7,8 @@ public class RessourceNotFoundException extends RuntimeException {
     public RessourceNotFoundException(String missingRessource, String object) {
         super("Ressource(s) (" + missingRessource + ") Not Found for : " + object);
     }
+    public RessourceNotFoundException(String missingRessource) {
+        super("Ressource(s) (" + missingRessource + ")");
+    }
+
 }

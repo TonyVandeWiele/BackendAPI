@@ -5,19 +5,25 @@ logging:
     javax.management.remote.rmi: ERROR
 
 spring:
-  config:
-    import: "application-password.yaml"
-
   datasource:
     services:
-      jdbc-url: jdbc:mysql://bd1.masmzi.icu:3306/dbservices
-      username: api
+      jdbc-url: ${mysqlurlS}
+      username: ${mysqlusername}
+      password: ${mysqlpassword}
+
       driver-class-name: com.mysql.cj.jdbc.Driver
 
     transac:
-      jdbc-url: jdbc:mysql://bd1.masmzi.icu:3306/dbtransac
-      username: api
+      jdbc-url: ${mysqlurlT}
+      username: ${mysqlusername}
+      password: ${mysqlpassword}
+
       driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: true
+
+
 
 
 

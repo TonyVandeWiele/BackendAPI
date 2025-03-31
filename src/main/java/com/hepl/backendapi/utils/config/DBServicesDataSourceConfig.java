@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.Properties;
 
 
 @Configuration
@@ -40,7 +41,9 @@ public class DBServicesDataSourceConfig {
         factory.setPackagesToScan("com.hepl.backendapi.entity.dbservices");
         factory.setPersistenceUnitName("services");
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-
+        Properties properties = new Properties();
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        factory.setJpaProperties(properties);
         return factory;
     }
 

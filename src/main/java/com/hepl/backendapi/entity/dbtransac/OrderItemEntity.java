@@ -1,6 +1,6 @@
 package com.hepl.backendapi.entity.dbtransac;
 
-import com.hepl.backendapi.utils.compositekey.OrderLineId;
+import com.hepl.backendapi.utils.compositekey.OrderItemId;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,12 +9,10 @@ import lombok.Setter;
 @Setter
 @Getter
 @Table(name = "order_lines")
-public class OrderLinesEntity {
+public class OrderItemEntity {
 
     @EmbeddedId
-    private OrderLineId id;
-
-
+    private OrderItemId id;
 
     @Column(name = "quantity")
     private int quantity;

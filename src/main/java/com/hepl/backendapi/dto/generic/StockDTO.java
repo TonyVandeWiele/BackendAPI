@@ -1,4 +1,4 @@
-package com.hepl.backendapi.dto;
+package com.hepl.backendapi.dto.generic;
 
 import lombok.*;
 
@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class StockDTO {
     private Long id;
-    private String name;
     private Long productId;
     private Integer quantity;
     private Integer stockMin;

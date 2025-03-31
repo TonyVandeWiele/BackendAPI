@@ -1,4 +1,4 @@
-package com.hepl.backendapi.dto;
+package com.hepl.backendapi.dto.post;
 
 import lombok.*;
 
@@ -7,8 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressDTO {
-    private Long id;
+public class AddressCreateDTO {
     private String street;
     private String city;
     private String number;

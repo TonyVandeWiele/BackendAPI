@@ -78,7 +78,26 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-</dependencies>
+
+        <!-- Spring Security -->
+        <!-- dd
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        -->
+        <!-- Dépendance pour le JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure.spring</groupId>
+            <artifactId>spring-cloud-azure-starter-keyvault</artifactId>
+            <version>5.21.0</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

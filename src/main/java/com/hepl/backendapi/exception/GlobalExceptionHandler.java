@@ -1,15 +1,22 @@
 package com.hepl.backendapi.exception;
 
+import com.hepl.backendapi.utils.enumeration.StatusEnum;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.PersistenceException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,55 +24,92 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RessourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleRessourceNotFound(RessourceNotFoundException ex) {
-        Map<String, Object> errorBody = new HashMap<>();
-        errorBody.put("timestamp", LocalDateTime.now());
-        errorBody.put("message", ex.getMessage());
-        errorBody.put("status", HttpStatus.NOT_FOUND.value());
+    @ApiResponse(
+            responseCode = "404",
+            description = "Resource not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleRessourceNotFound(RessourceNotFoundException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorBody);
+    @ExceptionHandler(DuplicateProductIdException.class)
+    @ApiResponse(
+            responseCode = "400",
+            description = "Duplicate Product ID",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleDuplicateProductIdException(DuplicateProductIdException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<Map<String, Object>> handleDataAccessException(DataAccessException ex) {
-        Map<String, Object> errorBody = new HashMap<>();
-        errorBody.put("timestamp", LocalDateTime.now());
-        errorBody.put("message", "An error occurred while accessing the database. Please try again later.");
-        errorBody.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody);
+    @ApiResponse(
+            responseCode = "503",
+            description = "Database access error",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleDataAccessException(DataAccessException ex) {
+        return buildErrorResponse("An error occurred while accessing the database. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(SQLException.class)
-    public ResponseEntity<Map<String, Object>> handleSQLException(SQLException ex) {
-        Map<String, Object> errorBody = new HashMap<>();
-        errorBody.put("timestamp", LocalDateTime.now());
-        errorBody.put("message", "Database connection error. Please check your database status.");
-        errorBody.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody);
+    @ApiResponse(
+            responseCode = "503",
+            description = "SQL Exception: Database connection issue",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleSQLException(SQLException ex) {
+        return buildErrorResponse("Database connection error. Please check your database status.", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(PersistenceException.class)
-    public ResponseEntity<Map<String, Object>> handlePersistenceException(PersistenceException ex) {
-        Map<String, Object> errorBody = new HashMap<>();
-        errorBody.put("timestamp", LocalDateTime.now());
-        errorBody.put("message", "A persistence error occurred. Please contact the administrator.");
-        errorBody.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody);
+    @ApiResponse(
+            responseCode = "503",
+            description = "Persistence error",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handlePersistenceException(PersistenceException ex) {
+        return buildErrorResponse(String.valueOf(ex.getCause()), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(JpaSystemException.class)
-    public ResponseEntity<Map<String, Object>> handleJpaSystemException(JpaSystemException ex) {
-        Map<String, Object> errorBody = new HashMap<>();
-        errorBody.put("timestamp", LocalDateTime.now());
-        errorBody.put("message", "There is an issue with the JPA system. Please contact the administrator.");
-        errorBody.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody);
+    @ApiResponse(
+            responseCode = "503",
+            description = "JPA system error",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleJpaSystemException(JpaSystemException ex) {
+        return buildErrorResponse(String.valueOf(ex.getMostSpecificCause()), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    @ExceptionHandler(MissingFieldException.class)
+    @ApiResponse(
+            responseCode = "400",
+            description = "Missing required field in request",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleMissingFieldException(MissingFieldException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleEnumConversionError(MethodArgumentTypeMismatchException ex) {
+        if (ex.getRequiredType() != null && ex.getRequiredType().equals(StatusEnum.class)) {
+            String paramName = ex.getName();
+            String invalidValue = ex.getValue() != null ? ex.getValue().toString() : "null";
+            String message = "Invalid value for parameter '" + paramName + "': '" + invalidValue
+                    + "'. Allowed values: " + Arrays.toString(StatusEnum.values());
+            return buildErrorResponse(message, HttpStatus.BAD_REQUEST);
+        }
+
+        // Si ce n'est pas un problème avec StatusEnum, renvoyer une erreur générique
+        return  buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Méthode pour éviter la duplication de code
+    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), message, status.value());
+        return ResponseEntity.status(status).body(errorResponse);
+    }
 }
-

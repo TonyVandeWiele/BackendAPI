@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Setter
 @Data
 @Embeddable
-public class OrderLineId implements Serializable {
+public class OrderItemId implements Serializable {
 
     @Column(name = "order_id")
     private Long orderId;

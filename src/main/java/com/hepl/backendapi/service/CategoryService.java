@@ -1,7 +1,7 @@
 package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.exception.RessourceNotFoundException;
-import com.hepl.backendapi.dto.CategoryDTO;
+import com.hepl.backendapi.dto.generic.CategoryDTO;
 import com.hepl.backendapi.entity.dbservices.CategoryEntity;
 import com.hepl.backendapi.mappers.CategoryMapper;
 import com.hepl.backendapi.repository.dbservices.CategoryRepository;
