@@ -67,11 +67,31 @@ public class OrderService {
 
     public List<OrderDTO> getAllOrders() {
         List<OrderEntity> orderEntities = orderRepository.findAll();
+
+        // Récupérer les IDs des adresses
+        List<Long> addressIds = orderEntities.stream()
+                .map(OrderEntity::getAddress_id)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Récupérer toutes les adresses correspondantes en une seule requête
+        List<AddressEntity> addressEntities = addressRepository.findAllById(addressIds);
+        Map<Long, AddressEntity> addressMap = addressEntities.stream()
+                .collect(Collectors.toMap(AddressEntity::getId, a -> a));
+
+        // Associer chaque commande avec son adresse
+        orderEntities.forEach(order -> order.setAddress(addressMap.get(order.getAddress_id())));
+
         return orderMapper.toDTOList(orderEntities);
     }
 
+
     public OrderDTO getOrderById(Long id) {
         OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id));
+
+        AddressEntity addressEntity = addressRepository.findById(orderEntity.getAddress_id()).orElseThrow(null); //A changer lors de changement de bd
+        orderEntity.setAddress(addressEntity);
+
         OrderDTO orderDTO = orderMapper.toDTO(orderEntity);
         List<Long> productIds = orderItemRepository.findProductIdsByOrderId (id);
         orderDTO.setProductsId(productIds);
@@ -156,6 +176,7 @@ public class OrderService {
                 .total(total)
                 .tracking(null)
                 .bank_name(null)
+                .address(addressEntity)
                 .address_id(addressEntity.getId())
                 .client_id(null)
                 .build();
@@ -186,7 +207,8 @@ public class OrderService {
         // Vérifier si la commande existe
         OrderEntity orderEntity = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), "Order ID not found: " + orderId));
-
+        AddressEntity addressEntity = addressRepository.findById(orderEntity.getAddress_id()).orElseThrow(null); //A changer lors de changement de bd
+        orderEntity.setAddress(addressEntity);
         // Mettre à jour le statut
         orderEntity.setStatus(newStatus);
 
@@ -199,7 +221,7 @@ public class OrderService {
                         trackingNumber(generateTrackingId()).
                         estimateDeliveryDate(LocalDateTime.now().plusDays(3)).
                         shipmentDate(LocalDateTime.now()).
-                        addressId(orderEntity.getAddress_id()).
+                        addressId(orderEntity.getAddress().getId()).
                         build();
                 trackingRepository.save(trackingEntity);
 

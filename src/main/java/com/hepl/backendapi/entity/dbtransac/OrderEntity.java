@@ -1,5 +1,6 @@
 package com.hepl.backendapi.entity.dbtransac;
 
+import com.hepl.backendapi.entity.dbservices.AddressEntity;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,6 +43,9 @@ public class OrderEntity {
 
     @Column(name = "address_id")
     private Long address_id;
+
+    @Transient
+    private AddressEntity address;
 
     @Column(name = "client_id")
     private Long client_id;

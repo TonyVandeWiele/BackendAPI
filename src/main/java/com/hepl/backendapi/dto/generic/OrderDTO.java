@@ -30,7 +30,7 @@ public class OrderDTO {
 
     private List<Long> productsId;
 
-    private Long address_id;
+    private AddressDTO address;
 
     private Long client_id;
 }

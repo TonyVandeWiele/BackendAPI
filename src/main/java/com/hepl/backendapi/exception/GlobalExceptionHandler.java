@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     public ResponseEntity<ErrorResponse> handleJpaSystemException(JpaSystemException ex) {
-        return buildErrorResponse(String.valueOf(ex.getMostSpecificCause()), HttpStatus.SERVICE_UNAVAILABLE);
+        return buildErrorResponse(String.valueOf(ex.getCause()), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(MissingFieldException.class)

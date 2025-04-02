@@ -3,6 +3,7 @@ package com.hepl.backendapi.mappers;
 import com.hepl.backendapi.dto.generic.OrderDTO;
 import com.hepl.backendapi.entity.dbtransac.OrderEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
