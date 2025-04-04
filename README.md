@@ -58,7 +58,7 @@ src
 ---'
 
 ## 📦 Dépendances utilisées
- 
+
 | 📦 Dépendance | 🔍 Rôle |
 |--------------|--------|
 | `spring-boot-starter-web` | Création d’API REST |
@@ -67,10 +67,12 @@ src
 | `lombok` | Réduction du boilerplate Java (Getters, Setters, etc.) |
 | `mapstruct` | Mapping d'objets Java |
 | `springdoc-openapi-starter-webmvc-ui` | Génération automatique de la documentation OpenAPI (Swagger UI) |
-| `spring-boot-starter-test` | Framework de tests (JUnit, Mockito, etc.) |
+| `spring-boot-starter-validation` | Validation des données (annotations `@Valid`, etc.) |
+| `spring-boot-starter-security` | Sécurisation des endpoints avec Spring Security |
+| `jjwt-api` | Gestion des tokens JWT (authentification) |
+| `spring-cloud-azure-starter-keyvault` | Intégration avec Azure Key Vault pour sécuriser les secrets |
 | `spring-boot-devtools` | Outils de développement (reload à chaud) |
 
----
 
 
 ## 🔐 Sécurité  
@@ -143,10 +145,13 @@ src
 
 ## 🔑 Sécurisation des mots de passe
 
-Pour éviter d'exposer des informations sensibles comme les mots de passe dans le code, nous utilisons un fichier 'application-password.yaml'
-spring:
-   datasource:
-      password: <DB_PASSWORD>
+Pour éviter l'exposition des mots de passe dans le code source, les secrets sont gérés et récupérés de manière sécurisée via Azure Key Vault.
+Les secrets nécessaires sont stockés dans Azure et injectés au moment de l'exécution dans l'application via des variables d'environnement ou la configuration Azure Spring Boot.
+
+Voici comment cela fonctionne :
+
+- Azure Key Vault stocke les secrets comme le mot de passe de la base de données.
+- Lors de l'exécution de l'application, Spring Boot récupère ces secrets et les injecte dans le contexte de l'application.
 
 
 ### **Démarrer l'application**  
@@ -155,7 +160,11 @@ spring:
 git clone https://github.com/votre-utilisateur/votre-repository.git
 cd votre-repository
 
-# Mettre le mot de passe pour le base de donnée (application-password.yaml)
+# Configurez votre environnement en définissant les variables suivantes via votre terminal ou dans un fichier .env :
+- mysqlurlS
+- mysqlusername
+- mysqlpassword
+- mysqlurlT
 
 # Construire le projet
 mvn clean install
