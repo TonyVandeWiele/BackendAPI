@@ -1,6 +1,5 @@
 package com.hepl.backendapi.entity.dbtransac;
 
-import com.hepl.backendapi.entity.dbservices.AddressEntity;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,7 +13,7 @@ import java.time.LocalTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "orders", schema = "dbtransac")
+@Table(name = "orders", schema = "bdtransac")
 public class OrderEntity {
 
     @Id
@@ -22,31 +21,26 @@ public class OrderEntity {
     private Long id;
 
     @Column(name = "order_date")
-    private LocalDate order_date;
+    private LocalDate orderDate;
 
     @Column(name = "order_time")
-    private LocalTime order_time;
+    private LocalTime orderTime;
 
-    @Column(name = "total")
     private Double total;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
     private StatusEnum status;
 
     @Column(name = "bank_name")
-    private String bank_name;
+    private String bankName;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "tracking_id", referencedColumnName = "id")
-    private TrackingEntity tracking;
+    @Column(name = "tracking_id")
+    private Long trackingId;
 
-    @Column(name = "address_id")
-    private Long address_id;
-
-    @Transient
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "address_id")
     private AddressEntity address;
 
     @Column(name = "client_id")
-    private Long client_id;
+    private Long clientId;
 }

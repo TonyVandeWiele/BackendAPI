@@ -19,7 +19,7 @@ public class UserDTO {
     private String email;
     private String phone;
     private AddressDTO address;
-    private LocalDateTime inscriptionDate;
+    private LocalDateTime registrationDate;
     private String clientAccountNumber;
     private SexeEnum sexe;
     private LocalDate birthday;

@@ -9,9 +9,12 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
+    @Mapping(target = "trackingId", source = "tracking.id")
     OrderEntity toEntity(OrderDTO orderDTO);
+
     OrderDTO toDTO(OrderEntity orderEntity);
 
     List<OrderDTO> toDTOList(List<OrderEntity> orderEntities);
+    @Mapping(target = "trackingId", source = "tracking.id")
     List<OrderEntity> toEntityList(List<OrderDTO> orderDTOs);
 }

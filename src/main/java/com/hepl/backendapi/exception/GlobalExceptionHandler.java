@@ -5,10 +5,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.PersistenceException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -16,26 +18,37 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(Exception ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        if (ex instanceof MethodArgumentNotValidException validationEx) {
+            validationEx.getBindingResult().getFieldErrors().forEach(error ->
+                    errors.put(error.getField(), error.getDefaultMessage()));
+        } else if (ex instanceof ConstraintViolationException constraintEx) {
+            errors.put("error", constraintEx.getMessage()); // Utilise juste le message
+        }
+
+        return buildErrorResponse("Validation error: " + errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(RessourceNotFoundException.class)
-    @ApiResponse(
-            responseCode = "404",
-            description = "Resource not found",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-    )
     public ResponseEntity<ErrorResponse> handleRessourceNotFound(RessourceNotFoundException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(DuplicateProductIdException.class)
-    @ApiResponse(
-            responseCode = "400",
-            description = "Duplicate Product ID",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-    )
     public ResponseEntity<ErrorResponse> handleDuplicateProductIdException(DuplicateProductIdException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -47,7 +60,7 @@ public class GlobalExceptionHandler {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     public ResponseEntity<ErrorResponse> handleDataAccessException(DataAccessException ex) {
-        return buildErrorResponse("An error occurred while accessing the database. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE);
+        return buildErrorResponse("An error occurred while accessing the database. Please try again later." + ex.getCause(), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(SQLException.class)
@@ -67,7 +80,7 @@ public class GlobalExceptionHandler {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     public ResponseEntity<ErrorResponse> handlePersistenceException(PersistenceException ex) {
-        return buildErrorResponse(String.valueOf(ex.getCause()), HttpStatus.SERVICE_UNAVAILABLE);
+        return buildErrorResponse(String.valueOf(ex.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(JpaSystemException.class)
@@ -77,7 +90,7 @@ public class GlobalExceptionHandler {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     public ResponseEntity<ErrorResponse> handleJpaSystemException(JpaSystemException ex) {
-        return buildErrorResponse(String.valueOf(ex.getCause()), HttpStatus.SERVICE_UNAVAILABLE);
+        return buildErrorResponse(String.valueOf(ex.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(MissingFieldException.class)

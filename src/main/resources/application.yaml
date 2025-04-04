@@ -19,6 +19,7 @@ spring:
       password: ${mysqlpassword}
 
       driver-class-name: com.mysql.cj.jdbc.Driver
+
   jackson:
     deserialization:
       FAIL_ON_UNKNOWN_PROPERTIES: true

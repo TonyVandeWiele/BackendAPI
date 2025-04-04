@@ -5,26 +5,25 @@ import com.hepl.backendapi.dto.generic.TrackingDTO;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.dto.post.OrderCreateDTO;
 import com.hepl.backendapi.dto.post.OrderItemCreateDTO;
-import com.hepl.backendapi.entity.dbservices.AddressEntity;
-import com.hepl.backendapi.entity.dbservices.ProductEntity;
-import com.hepl.backendapi.entity.dbservices.StockEntity;
+import com.hepl.backendapi.entity.dbtransac.AddressEntity;
+import com.hepl.backendapi.entity.dbtransac.ProductEntity;
+import com.hepl.backendapi.entity.dbtransac.StockEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
-import com.hepl.backendapi.entity.dbtransac.TrackingEntity;
+import com.hepl.backendapi.entity.dbservices.TrackingEntity;
 import com.hepl.backendapi.exception.DuplicateProductIdException;
 import com.hepl.backendapi.exception.MissingFieldException;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.*;
-import com.hepl.backendapi.repository.dbservices.AddressRepository;
-import com.hepl.backendapi.repository.dbservices.ProductRepository;
-import com.hepl.backendapi.repository.dbservices.StockRepository;
+import com.hepl.backendapi.repository.dbtransac.AddressRepository;
+import com.hepl.backendapi.repository.dbtransac.ProductRepository;
+import com.hepl.backendapi.repository.dbtransac.StockRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderItemRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderRepository;
-import com.hepl.backendapi.repository.dbtransac.TrackingRepository;
+import com.hepl.backendapi.repository.dbservices.TrackingRepository;
+import com.hepl.backendapi.utils.UtilsClass;
 import com.hepl.backendapi.utils.compositekey.OrderItemId;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -38,8 +37,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
-    @PersistenceContext(unitName = "transac")
-    private EntityManager entityManager;
+
     OrderRepository orderRepository;
     OrderItemRepository orderItemRepository;
     ProductRepository productRepository;
@@ -67,21 +65,6 @@ public class OrderService {
 
     public List<OrderDTO> getAllOrders() {
         List<OrderEntity> orderEntities = orderRepository.findAll();
-
-        // Récupérer les IDs des adresses
-        List<Long> addressIds = orderEntities.stream()
-                .map(OrderEntity::getAddress_id)
-                .distinct()
-                .collect(Collectors.toList());
-
-        // Récupérer toutes les adresses correspondantes en une seule requête
-        List<AddressEntity> addressEntities = addressRepository.findAllById(addressIds);
-        Map<Long, AddressEntity> addressMap = addressEntities.stream()
-                .collect(Collectors.toMap(AddressEntity::getId, a -> a));
-
-        // Associer chaque commande avec son adresse
-        orderEntities.forEach(order -> order.setAddress(addressMap.get(order.getAddress_id())));
-
         return orderMapper.toDTOList(orderEntities);
     }
 
@@ -89,15 +72,18 @@ public class OrderService {
     public OrderDTO getOrderById(Long id) {
         OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id));
 
-        AddressEntity addressEntity = addressRepository.findById(orderEntity.getAddress_id()).orElseThrow(null); //A changer lors de changement de bd
-        orderEntity.setAddress(addressEntity);
-
         OrderDTO orderDTO = orderMapper.toDTO(orderEntity);
-        List<Long> productIds = orderItemRepository.findProductIdsByOrderId (id);
-        orderDTO.setProductsId(productIds);
+
+        // Récupération des produits associés
+        List<OrderItemEntity> orderItemEntityList = orderItemRepository.findAllByIdOrderId(id);
+        orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItemEntityList));
+
+        // Récupération du tracking associé
+        TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), orderEntity.getTrackingId()));;
+        orderDTO.setTracking(trackingMapper.toTrackingDTO(trackingEntity));
+
         return orderDTO;
     }
-
 
     @Transactional
     public OrderDTO createOrder(OrderCreateDTO orderCreateDTO) {
@@ -169,20 +155,21 @@ public class OrderService {
                 })
                 .sum();
 
+        // Création de la commande
         OrderEntity orderEntity = OrderEntity.builder()
-                .order_date(LocalDate.now())
-                .order_time(LocalTime.now())
-                .status(StatusEnum.confirmed)
+                .orderDate(LocalDate.now())
+                .orderTime(LocalTime.now())
+                .status(StatusEnum.pending)
                 .total(total)
-                .tracking(null)
-                .bank_name(null)
+                .trackingId(null)
+                .bankName("Unknown")
                 .address(addressEntity)
-                .address_id(addressEntity.getId())
-                .client_id(null)
+                .clientId(1L)
                 .build();
 
         orderRepository.save(orderEntity);
 
+        List<OrderItemEntity> orderItemEntityList = new ArrayList<>();
         // Enregistrer chaque ligne de commande
         for (OrderItemCreateDTO orderItemDTO : orderCreateDTO.getOrderItemsCreateDTOList()) {
             OrderItemEntity orderItemEntity = new OrderItemEntity();
@@ -190,16 +177,28 @@ public class OrderService {
             orderItemEntity.setQuantity(orderItemDTO.getQuantity());
 
             // Mise à jour du stock
-            StockEntity stockEntity = stockRepository.findByProductId(orderItemDTO.getProductId()).orElseThrow(() -> new RessourceNotFoundException("This product does have a stock", orderItemDTO.getProductId()));
-            stockEntity.setQuantity(stockEntity.getQuantity() - orderItemDTO.getQuantity());
+            StockEntity stockEntity = stockRepository.findByProductId(orderItemDTO.getProductId())
+                    .orElseThrow(() -> new RessourceNotFoundException("This product does not have a stock", orderItemDTO.getProductId()));
 
+            // Calcul de la nouvelle quantité
+            int quantity = stockEntity.getQuantity() - orderItemDTO.getQuantity();
+
+            UtilsClass.validateQuantityInRange(quantity, stockEntity);  // Vérification de la quantité
+
+            // Mise à jour du stock
+            stockEntity.setQuantity(quantity);
+
+            // Sauvegarde du stock mis à jour et de l'élément de commande
             stockRepository.save(stockEntity);
-
             orderItemRepository.save(orderItemEntity);
+
+
+            orderItemEntityList.add(orderItemEntity);
         }
 
         OrderDTO orderDTO = orderMapper.toDTO(orderEntity);
-        orderDTO.setProductsId(productIds);
+
+        orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItemEntityList));
         return orderDTO;
     }
 
@@ -207,41 +206,48 @@ public class OrderService {
         // Vérifier si la commande existe
         OrderEntity orderEntity = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), "Order ID not found: " + orderId));
-        AddressEntity addressEntity = addressRepository.findById(orderEntity.getAddress_id()).orElseThrow(null); //A changer lors de changement de bd
-        orderEntity.setAddress(addressEntity);
-        // Mettre à jour le statut
+
+        // Mettre à jour le statut de la commande
         orderEntity.setStatus(newStatus);
 
-        TrackingDTO trackingDTO = null;
+        // Créer un Tracking si le statut est "shipped" et qu'il n'existe pas déjà
+        if (newStatus == StatusEnum.shipped && orderEntity.getTrackingId() == null) {
+            TrackingEntity trackingEntity = TrackingEntity.builder()
+                    .orderId(orderEntity.getId())
+                    .trackingNumber(generateTrackingId())
+                    .estimateDeliveryDate(LocalDateTime.now().plusDays(3))
+                    .shipmentDate(LocalDateTime.now())
+                    .addressId(orderEntity.getAddress().getId())
+                    .build();
 
-        if (newStatus == StatusEnum.shipped) {
-            if (orderEntity.getTracking() == null) { // Vérifie s'il n'existe pas déjà
-                TrackingEntity trackingEntity = TrackingEntity.builder().
-                        orderId(orderEntity.getId()).
-                        trackingNumber(generateTrackingId()).
-                        estimateDeliveryDate(LocalDateTime.now().plusDays(3)).
-                        shipmentDate(LocalDateTime.now()).
-                        addressId(orderEntity.getAddress().getId()).
-                        build();
-                trackingRepository.save(trackingEntity);
-
-                orderEntity.setTracking(trackingEntity);
-                orderRepository.save(orderEntity);
-
-                trackingDTO = trackingMapper.toTrackingDTO(trackingEntity);
-            }
+            trackingRepository.save(trackingEntity); // Sauvegarder le tracking dans la base
+            orderEntity.setTrackingId(trackingEntity.getId()); // Lier le tracking à la commande
         }
 
+        // Sauvegarder la commande avec le nouveau statut et éventuellement le tracking associé
         orderRepository.save(orderEntity);
 
-        // Retourner l'objet DTO mis à jour
-        return orderMapper.toDTO(orderEntity);
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderEntity);
+
+        // Si un TrackingEntity a été créé ou existe déjà, le mettre dans le DTO
+        if (orderEntity.getTrackingId() != null) {
+            TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId())
+                    .orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), "Tracking ID not found: " + orderEntity.getTrackingId()));
+
+            updatedOrderDTO.setTracking(trackingMapper.toTrackingDTO(trackingEntity)); // Ajouter le DTO de tracking
+        }
+
+        return updatedOrderDTO;
     }
+
 
     @Transactional
     public void deleteOrder(Long orderId) {
         // Vérifier si la commande existe
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), orderId));
+
+        // Supprimer le tracking associé
+        trackingRepository.deleteById(orderEntity.getTrackingId());
 
         // Supprimer les lignes de commande associées
         orderItemRepository.deleteAllById_OrderId(orderId);

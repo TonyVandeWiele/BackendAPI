@@ -1,8 +1,11 @@
 package com.hepl.backendapi.controller;
 
 import com.hepl.backendapi.dto.generic.StockDTO;
+import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.StockService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +24,12 @@ public class StockController {
         this.stockService = stockService;
     }
 
-    @Operation(summary = "Get stock by ID")
+    @Operation(summary = "Get stock by Product ID")
     @ApiResponse(responseCode = "200", description = "Stock found")
-    @GetMapping("/stock/{id}")
-    public ResponseEntity<StockDTO> fetchStockById(@PathVariable Long id) {
-        return ResponseEntity.ok(stockService.getStockById(id));
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @GetMapping("/stock/{productId}")
+    public ResponseEntity<StockDTO> fetchStockById(@PathVariable Long productId) {
+        return ResponseEntity.ok(stockService.getStockByProductId(productId));
     }
 
     @Operation(summary = "Get all stocks")
@@ -37,6 +41,8 @@ public class StockController {
 
     @Operation(summary = "Update the stock of a product")
     @ApiResponse(responseCode = "200", description = "Stock quantity updated succefully")
+    @ApiResponse(responseCode = "400", description = "The quantity is outside the permitted range")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @PutMapping("/stock/{productId}")
     public ResponseEntity<StockDTO> updateStock(@PathVariable Long productId, @RequestBody Integer quantity) {
         StockDTO updatedStock = stockService.updateStock(productId, quantity);

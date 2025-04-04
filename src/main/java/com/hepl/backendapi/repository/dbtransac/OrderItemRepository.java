@@ -16,7 +16,4 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Orde
     @Modifying
     @Query("DELETE FROM OrderItemEntity oi WHERE oi.id.orderId = :orderId")
     void deleteAllById_OrderId(Long orderId);
-
-    @Query("SELECT oi.id.productId FROM OrderItemEntity oi WHERE oi.id.orderId = :orderId")
-    List<Long> findProductIdsByOrderId(Long orderId);
 }

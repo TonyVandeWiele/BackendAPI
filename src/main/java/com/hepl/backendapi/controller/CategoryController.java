@@ -1,8 +1,11 @@
 package com.hepl.backendapi.controller;
 
 import com.hepl.backendapi.dto.generic.CategoryDTO;
+import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,7 @@ public class CategoryController {
 
     @Operation(summary = "Get category by ID")
     @ApiResponse(responseCode = "200", description = "Category found")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping("/category/{id}")
     public ResponseEntity<CategoryDTO> fetchCategoryById(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));

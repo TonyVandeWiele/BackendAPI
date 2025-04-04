@@ -1,4 +1,4 @@
-package com.hepl.backendapi.entity.dbservices;
+package com.hepl.backendapi.entity.dbtransac;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "stocks")
+@Table(name = "stock")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,19 +17,18 @@ public class StockEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "produit_id")
+    @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "quantité")
     private Integer quantity;
 
-    @Column(name = "stock_min")
+    @Column(name = "min_stock")
     private Integer stockMin;
 
-    @Column(name = "stock_max")
+    @Column(name = "max_stock")
     private Integer stockMax;
 
-    @Column(name = "date_maj")
+    @Column(name = "update_date")
     private LocalDateTime lastUpdated;
 
 }

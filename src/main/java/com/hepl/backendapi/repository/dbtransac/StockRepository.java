@@ -1,6 +1,6 @@
-package com.hepl.backendapi.repository.dbservices;
+package com.hepl.backendapi.repository.dbtransac;
 
-import com.hepl.backendapi.entity.dbservices.StockEntity;
+import com.hepl.backendapi.entity.dbtransac.StockEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

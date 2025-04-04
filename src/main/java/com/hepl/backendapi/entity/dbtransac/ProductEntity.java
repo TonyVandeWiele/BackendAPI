@@ -1,4 +1,4 @@
-package com.hepl.backendapi.entity.dbservices;
+package com.hepl.backendapi.entity.dbtransac;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Builder
 @Entity
-@Table(name = "produits")
+@Table(name = "products")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductEntity {
@@ -16,21 +16,13 @@ public class ProductEntity {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
-        @Column(name = "nom")
         private String name;
 
-        @Column(name = "prix")
         private Double price;
 
-        @Column(name = "description")
         private String description;
 
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "categorie_id")
+        @ManyToOne(fetch = FetchType.EAGER)
+        @JoinColumn(name = "category_id")
         private CategoryEntity category;
-
-
-        @OneToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "stock_id")
-        private StockEntity stock;
 }

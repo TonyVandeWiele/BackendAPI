@@ -1,7 +1,7 @@
 package com.hepl.backendapi.mappers;
 
 import com.hepl.backendapi.dto.generic.TrackingDTO;
-import com.hepl.backendapi.entity.dbtransac.TrackingEntity;
+import com.hepl.backendapi.entity.dbservices.TrackingEntity;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

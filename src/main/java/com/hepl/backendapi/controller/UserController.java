@@ -1,8 +1,11 @@
 package com.hepl.backendapi.controller;
 
 import com.hepl.backendapi.dto.generic.UserDTO;
+import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -25,6 +28,7 @@ public class UserController {
 
     @Operation(summary = "Get user by ID")
     @ApiResponse(responseCode = "200", description = "User found")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping("/user/{id}")
     public ResponseEntity<UserDTO> fetchUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));

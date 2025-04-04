@@ -17,5 +17,4 @@ public class OrderItemEntity {
     @Column(name = "quantity")
     private int quantity;
 
-    // Constructors, getters, setters
 }

@@ -2,10 +2,15 @@ package com.hepl.backendapi.controller;
 
 import com.hepl.backendapi.dto.generic.ProductDTO;
 import com.hepl.backendapi.dto.post.ProductCreateDTO;
+import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +30,7 @@ public class ProductController {
 
     @Operation(summary = "Get product by ID")
     @ApiResponse(responseCode = "200", description = "Product found")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping("/product/id/{id}")
     public ResponseEntity<ProductDTO> fetchProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
@@ -53,15 +59,22 @@ public class ProductController {
     }
 
     @Operation(summary = "Create a new product")
-    @ApiResponse(responseCode = "201", description = "Product created successfully")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Product created successfully"),
+            @ApiResponse(responseCode = "400", description = "Argument Not Valid or Quantity Out of Range",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Resource not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/product")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductCreateDTO productCreateDTO) {
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductCreateDTO productCreateDTO) {
         ProductDTO created = productService.createProduct(productCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Operation(summary = "Delete a product by ID")
     @ApiResponse(responseCode = "204", description = "Product deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @DeleteMapping("/product/{id}")
     public ResponseEntity<Void> deleteProductById(@PathVariable Long id) {
         productService.deleteProductById(id);

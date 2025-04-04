@@ -1,5 +1,7 @@
 package com.hepl.backendapi.dto.generic;
 
+import com.hepl.backendapi.entity.dbtransac.OrderEntity;
+import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import lombok.*;
 
@@ -16,21 +18,21 @@ public class OrderDTO {
 
     private int id;
 
-    private LocalDate order_date;
+    private LocalDate orderDate;
 
-    private LocalTime order_time;
+    private LocalTime orderTime;
 
     private StatusEnum status;
 
-    private String bank_name;
+    private String bankName;
 
     private Float total;
 
     private TrackingDTO tracking;
 
-    private List<Long> productsId;
+    private List<OrderItemDTO> orderItems;
 
     private AddressDTO address;
 
-    private Long client_id;
+    private Long clientId;
 }

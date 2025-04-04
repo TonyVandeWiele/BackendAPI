@@ -1,4 +1,4 @@
-package com.hepl.backendapi.entity.dbservices;
+package com.hepl.backendapi.entity.dbtransac;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,10 +16,8 @@ public class CategoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nom")
     private String name;
 
-    @Column(name = "description")
     private String description;
 }
 

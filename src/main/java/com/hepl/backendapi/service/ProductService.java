@@ -2,16 +2,17 @@ package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.dto.generic.ProductDTO;
 import com.hepl.backendapi.dto.post.ProductCreateDTO;
-import com.hepl.backendapi.entity.dbservices.CategoryEntity;
-import com.hepl.backendapi.entity.dbservices.ProductEntity;
-import com.hepl.backendapi.entity.dbservices.StockEntity;
+import com.hepl.backendapi.entity.dbtransac.CategoryEntity;
+import com.hepl.backendapi.entity.dbtransac.ProductEntity;
+import com.hepl.backendapi.entity.dbtransac.StockEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.OrderItemMapper;
 import com.hepl.backendapi.mappers.ProductMapper;
-import com.hepl.backendapi.repository.dbservices.CategoryRepository;
-import com.hepl.backendapi.repository.dbservices.ProductRepository;
-import com.hepl.backendapi.repository.dbservices.StockRepository;
+import com.hepl.backendapi.mappers.StockMapper;
+import com.hepl.backendapi.repository.dbtransac.CategoryRepository;
+import com.hepl.backendapi.repository.dbtransac.ProductRepository;
+import com.hepl.backendapi.repository.dbtransac.StockRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderItemRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +30,17 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final StockRepository stockRepository;
     private final OrderItemRepository orderItemRepository;
+    private final StockMapper stockMapper;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper, OrderItemMapper orderItemMapper, CategoryRepository categoryRepository, StockRepository stockRepository, OrderItemRepository orderItemRepository) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper, OrderItemMapper orderItemMapper, CategoryRepository categoryRepository, StockRepository stockRepository, OrderItemRepository orderItemRepository, StockMapper stockMapper) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
         this.orderItemMapper = orderItemMapper;
         this.categoryRepository = categoryRepository;
         this.stockRepository = stockRepository;
         this.orderItemRepository = orderItemRepository;
-
+        this.stockMapper = stockMapper;
     }
 
     public List<ProductDTO> getAllProducts() {
@@ -89,22 +91,26 @@ public class ProductService {
         CategoryEntity category = categoryRepository.findById(productCreateDTO.getCategoryId())
                 .orElseThrow(() -> new RessourceNotFoundException(CategoryEntity.class.getSimpleName(), productCreateDTO.getCategoryId()));
 
-        StockEntity stock = StockEntity.builder().
-                stockMax(productCreateDTO.getStockMax()).
-                stockMin(productCreateDTO.getStockMin()).
-                quantity(productCreateDTO.getQuantity()).
-                lastUpdated(LocalDateTime.now()).
-                build();
-        StockEntity stockSaved = stockRepository.save(stock);
+        // Check quantity constraints
+        if (productCreateDTO.getQuantity() < productCreateDTO.getStockMin() ||
+                productCreateDTO.getQuantity() > productCreateDTO.getStockMax()) {
+            throw new IllegalArgumentException("Quantity must be between stockMin and stockMax.");
+        }
 
         ProductEntity product = ProductEntity.builder()
                 .category(category)
                 .description(productCreateDTO.getDescription())
                 .price(productCreateDTO.getPrice())
                 .name(productCreateDTO.getName())
-                .stock(stockSaved)
                 .build();
         ProductEntity productSaved = productRepository.save(product);
+
+        StockEntity stock = StockEntity.builder().
+                stockMax(productCreateDTO.getStockMax()).
+                stockMin(productCreateDTO.getStockMin()).
+                quantity(productCreateDTO.getQuantity()).
+                lastUpdated(LocalDateTime.now()).
+                build();
 
         stock.setProductId(productSaved.getId());
         stockRepository.save(stock);

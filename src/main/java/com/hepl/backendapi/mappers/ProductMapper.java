@@ -2,7 +2,7 @@ package com.hepl.backendapi.mappers;
 
 import com.hepl.backendapi.dto.generic.ProductDTO;
 import com.hepl.backendapi.dto.post.ProductCreateDTO;
-import com.hepl.backendapi.entity.dbservices.ProductEntity;
+import com.hepl.backendapi.entity.dbtransac.ProductEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;
