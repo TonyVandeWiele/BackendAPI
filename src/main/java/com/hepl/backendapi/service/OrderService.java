@@ -78,10 +78,11 @@ public class OrderService {
         List<OrderItemEntity> orderItemEntityList = orderItemRepository.findAllByIdOrderId(id);
         orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItemEntityList));
 
-        // Récupération du tracking associé
-        TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), orderEntity.getTrackingId()));;
-        orderDTO.setTracking(trackingMapper.toTrackingDTO(trackingEntity));
-
+        if(orderEntity.getTrackingId() != null) {
+            // Récupération du tracking associé
+            TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), orderEntity.getTrackingId()));;
+            orderDTO.setTracking(trackingMapper.toTrackingDTO(trackingEntity));
+        }
         return orderDTO;
     }
 
@@ -123,8 +124,8 @@ public class OrderService {
         } else if (orderCreateDTO.getNewAddress() != null) {
             // Vérifier si l'adresse existe déjà
             AddressCreateDTO newAddressDTO = orderCreateDTO.getNewAddress();
-            Optional<AddressEntity> existingAddress = addressRepository.findByStreetAndCityAndZipCodeAndCountry(
-                    newAddressDTO.getStreet(), newAddressDTO.getCity(), newAddressDTO.getZipCode(), newAddressDTO.getCountry());
+            Optional<AddressEntity> existingAddress = addressRepository.findByNumberAndStreetAndCityAndZipCodeAndCountry(
+                    newAddressDTO.getNumber(), newAddressDTO.getStreet(), newAddressDTO.getCity(), newAddressDTO.getZipCode(), newAddressDTO.getCountry());
 
             if (existingAddress.isPresent()) {
                 addressEntity = existingAddress.get();

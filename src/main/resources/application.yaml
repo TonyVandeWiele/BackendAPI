@@ -20,6 +20,16 @@ spring:
 
       driver-class-name: com.mysql.cj.jdbc.Driver
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key: |
+            -----BEGIN PUBLIC KEY-----
+            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy6eChzB1qkuEXAMPLE
+            KEYHEREkDJf1+N6cd0eP6Y/ViZ6KPMmr7P3D6dP3WRAGgkhQIDAQAB
+            -----END PUBLIC KEY-----
+
   jackson:
     deserialization:
       FAIL_ON_UNKNOWN_PROPERTIES: true

@@ -10,11 +10,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import javax.naming.AuthenticationException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -51,6 +53,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateProductIdException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateProductIdException(DuplicateProductIdException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Gérer les erreurs d'authentification
+    // Gérer l'absence de JWT
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    @ApiResponse(
+            responseCode = "401",
+            description = "JWT token is missing or invalid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleMissingJwtException(AuthenticationCredentialsNotFoundException ex) {
+        return buildErrorResponse("JWT token is missing or invalid", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(DataAccessException.class)

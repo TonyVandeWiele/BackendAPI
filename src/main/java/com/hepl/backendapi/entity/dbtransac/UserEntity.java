@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "clients", schema = "bdtransac")
+@Table(name = "users")
 public class UserEntity {
 
     @Id
@@ -28,7 +28,7 @@ public class UserEntity {
 
     private String phone;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "address_id")
     private AddressEntity address;
 
@@ -38,8 +38,7 @@ public class UserEntity {
     @Column(name = "client_account_number")
     private String clientAccountNumber;
 
-
-    @Column(name = "bith_day")
+    @Column(name = "birth_date")
     private LocalDate birthday;
 
     @Enumerated(EnumType.STRING)
@@ -51,6 +50,5 @@ public class UserEntity {
     private SexeEnum sexe;
 
     @Column(name = "monthly_salary")
-    private BigDecimal mensuelSalary;
-
+    private Double mensuelSalary;
 }

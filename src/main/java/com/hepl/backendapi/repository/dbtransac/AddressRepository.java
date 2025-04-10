@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AddressRepository extends JpaRepository<AddressEntity, Long> {
-    Optional<AddressEntity> findByStreetAndCityAndZipCodeAndCountry(String street, String city, String zipCode, String country);
+    Optional<AddressEntity> findByNumberAndStreetAndCityAndZipCodeAndCountry(
+            String number, String street, String city, String zipCode, String country);
     @Query("SELECT DISTINCT o.address.id FROM OrderEntity o WHERE o.clientId = :clientId")
     List<Long> findAddressIdsByClientId(@Param("clientId") Long clientId);
 }
