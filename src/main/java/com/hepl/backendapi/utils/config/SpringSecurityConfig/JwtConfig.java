@@ -40,7 +40,13 @@ public class JwtConfig {
 
     private PublicKey loadPublicKey() {
         try {
-            String key = Files.readString(Path.of("src/main/resources/public.pem"))
+            // Chargement de la ressource depuis le classpath
+            var resource = getClass().getClassLoader().getResourceAsStream("public.pem");
+            if (resource == null) {
+                throw new IllegalStateException("Fichier public.pem introuvable dans les ressources");
+            }
+
+            String key = new String(resource.readAllBytes())
                     .replace("-----BEGIN PUBLIC KEY-----", "")
                     .replace("-----END PUBLIC KEY-----", "")
                     .replaceAll("\\s", "");
