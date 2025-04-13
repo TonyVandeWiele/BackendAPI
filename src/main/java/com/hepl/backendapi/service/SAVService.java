@@ -9,6 +9,7 @@ import com.hepl.backendapi.mappers.SAVMapper;
 import com.hepl.backendapi.repository.dbservices.SAVRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderRepository;
 import com.hepl.backendapi.utils.enumeration.RequestTypeEnum;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class SAVService {
 
     private final OrderRepository orderRepository;
 
-    public SAVService(SAVRepository savRepository, SAVMapper savMapper, OrderRepository orderRepository) {
+    public SAVService(SAVRepository savRepository, @Qualifier("SAVMapper") SAVMapper savMapper, OrderRepository orderRepository) {
         this.savRepository = savRepository;
         this.savMapper = savMapper;
         this.orderRepository = orderRepository;
