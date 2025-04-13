@@ -63,8 +63,6 @@ Grâce au `Principal`, Spring sait quel utilisateur est connecté, et seul le bo
 
 ---
 
----
-
 ## 🔀 Schéma du flux
 
 ```plaintext
@@ -85,6 +83,74 @@ Client A envoie à B : /app/private-message { toAccountId: B }
 Serveur
    └──> Route vers /user/B/private → livré uniquement à B
 ```
+
+---
+
+## 💻 Fonctionnement côté Frontend
+
+### 📦 Technologies requises
+
+- `SockJS` pour gérer la connexion WebSocket avec fallback
+- `Stomp.js` pour parler STOMP au-dessus de WebSocket
+- Un **token JWT valide** pour l'authentification
+
+  🔍 C'est quoi SockJS ?
+
+   SockJS est une bibliothèque JavaScript qui permet d'établir une connexion WebSocket compatible avec tous les navigateurs, même ceux qui ne supportent pas WebSocket nativement.
+   
+   Fonctionnement :
+   SockJS essaie d’abord d’utiliser `WebSocket`.
+   
+   Si ce n’est pas possible (navigateur trop ancien, proxy bloquant, etc.), il bascule automatiquement vers une solution de secours comme :
+   - `Long polling`,
+   - `Streaming HTTP`,
+   - `Iframes, etc`.
+
+  🔍 C'est quoi STOMP ?
+  
+   - STOMP donne une structure à la communication WebSocket
+   - Tu peux envoyer, écouter, s’abonner, se désabonner
+   - Spring a un support intégré pour STOMP
+ 
+   - Exemple de message STOMP
+        ```bash
+        SEND
+        destination:/app/private-message
+        content-type:application/json
+        { "toAccountId": "bob", "content": "Hello!" }
+        
+### 🚀 Exemple d’implémentation en JavaScript
+   ```html
+      <!-- index.html -->
+      <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+      
+      <div id="chat-box" style="height:200px;overflow:auto;border:1px solid #ccc;"></div>
+      <input id="message-input" placeholder="Message...">
+      <button id="send-button">Envoyer</button>
+      
+      <script>
+      const token = "votre_token_JWT";
+      const socket = new SockJS("https://votre-api/ws?Authorization=Bearer " + token);
+      const stompClient = Stomp.over(socket);
+      
+      stompClient.connect({}, () => {
+        stompClient.subscribe("/user/private", msg => {
+          document.getElementById("chat-box").innerHTML += `<p>${msg.body}</p>`;
+        });
+      });
+      
+      document.getElementById("send-button").onclick = () => {
+        const msg = document.getElementById("message-input").value;
+        stompClient.send("/app/private-message", {}, JSON.stringify({ toAccountId: "admin", message: msg }));
+      };
+      </script>
+   ```
+
+   - Le token JWT est transmis via l’URL au moment du handshake.
+   - Le client s’abonne à /user/private pour recevoir les messages ciblés.
+   - Il envoie un message à /app/private-message avec le champ toAccountId.
+---
 
 ---
 
