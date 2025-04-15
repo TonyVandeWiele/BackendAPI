@@ -54,6 +54,27 @@ public class ProductService {
         return productMapper.toDTO(productEntity);
     }
 
+    public List<ProductDTO> getProductsByIds(List<Long> ids) {
+        List<ProductEntity> products = productRepository.findAllById(ids);
+
+        if (products.size() != ids.size()) {
+            // Trouver les IDs manquants
+            List<Long> foundIds = products.stream()
+                    .map(ProductEntity::getId)
+                    .toList();
+            List<Long> missingIds = ids.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            throw new RessourceNotFoundException("Products not found for IDs: " + missingIds);
+        }
+
+        return products.stream()
+                .map(productMapper::toDTO)
+                .toList();
+    }
+
+
     public List<ProductDTO> getAllProductsByCategoryName(String name) {
         List<ProductEntity> products = productRepository.findAllByCategoryName(name);
         return productMapper.toDTOList(products);

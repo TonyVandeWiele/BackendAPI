@@ -217,7 +217,7 @@ public class OrderService {
                     .orderId(orderEntity.getId())
                     .trackingNumber(generateTrackingId())
                     .estimateDeliveryDate(LocalDateTime.now().plusDays(3))
-                    .shipmentDate(LocalDateTime.now())
+                    .shipmentDate(LocalDateTime.now().plusDays(1))
                     .addressId(orderEntity.getAddress().getId())
                     .build();
 

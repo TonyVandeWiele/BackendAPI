@@ -36,6 +36,15 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
+    @Operation(summary = "Get products by list of IDs (POST)")
+    @ApiResponse(responseCode = "200", description = "Products found")
+    @ApiResponse(responseCode = "404", description = "Some resources not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @PostMapping("/products/ids")
+    public ResponseEntity<List<ProductDTO>> fetchProductsByIds(@RequestBody List<Long> ids) {
+        return ResponseEntity.ok(productService.getProductsByIds(ids));
+    }
+
+
     @Operation(summary = "Get all products by category name")
     @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
     @GetMapping("/products/category/{categoryName}")
