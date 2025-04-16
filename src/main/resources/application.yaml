@@ -1,8 +1,11 @@
 logging:
   level:
-    root: DEBUG
-    sun.rmi: ERROR
-    javax.management.remote.rmi: ERROR
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+    org.hibernate.transaction: DEBUG
+
 
 spring:
   datasource:
@@ -10,15 +13,30 @@ spring:
       jdbc-url: ${mysqlurlS}
       username: ${mysqlusername}
       password: ${mysqlpassword}
-
       driver-class-name: com.mysql.cj.jdbc.Driver
+
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 1
+        idle-timeout: 30000           # 30s avant de fermer une connexion idle
+        connection-timeout: 30000     # 30s max pour obtenir une connexion
+        leak-detection-threshold: 15000 # alerte si une connexion n’est pas rendue après 15s
+        auto-commit: false
 
     transac:
       jdbc-url: ${mysqlurlT}
       username: ${mysqlusername}
       password: ${mysqlpassword}
-
       driver-class-name: com.mysql.cj.jdbc.Driver
+
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 1
+        idle-timeout: 30000
+        connection-timeout: 30000
+        leak-detection-threshold: 15000
+        auto-commit: false
+
 
   security:
     oauth2:

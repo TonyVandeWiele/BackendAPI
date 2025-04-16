@@ -39,6 +39,7 @@ public class DBTransacDataSourceConfig {
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         Properties properties = new Properties();
         properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        properties.put("hibernate.flushMode", "COMMIT");
         factory.setJpaProperties(properties);
         return factory;
     }

@@ -1,7 +1,6 @@
 package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.dto.generic.OrderDTO;
-import com.hepl.backendapi.dto.generic.TrackingDTO;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.dto.post.OrderCreateDTO;
 import com.hepl.backendapi.dto.post.OrderItemCreateDTO;
@@ -24,10 +23,10 @@ import com.hepl.backendapi.repository.dbservices.TrackingRepository;
 import com.hepl.backendapi.utils.UtilsClass;
 import com.hepl.backendapi.utils.compositekey.OrderItemId;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -130,74 +129,63 @@ public class OrderService {
     @Transactional
     public OrderDTO createOrder(OrderCreateDTO orderCreateDTO) {
 
-        // If products are present in the order or not
         if (orderCreateDTO.getOrderItemsCreateDTOList() == null || orderCreateDTO.getOrderItemsCreateDTOList().isEmpty()) {
             throw new MissingFieldException("orderItemsCreateDTOList");
         }
 
-        List<Long> productIds = new ArrayList<>();
-        for (OrderItemCreateDTO orderItem : orderCreateDTO.getOrderItemsCreateDTOList()) {
-            productIds.add(orderItem.getProductId());
-        }
+        List<Long> productIds = orderCreateDTO.getOrderItemsCreateDTOList().stream()
+                .map(OrderItemCreateDTO::getProductId)
+                .toList();
 
+        // Vérif doublons
         Set<Long> uniqueIds = new HashSet<>();
         Set<Long> duplicateIds = productIds.stream()
-                .filter(id -> !uniqueIds.add(id)) // Ajoute à uniqueIds et détecte les doublons
+                .filter(id -> !uniqueIds.add(id))
                 .collect(Collectors.toSet());
-
-        List<ProductEntity> productEntities = productRepository.findAllById(productIds);
 
         if (!duplicateIds.isEmpty()) {
             throw new DuplicateProductIdException("Duplicate product IDs found: " + duplicateIds);
         }
 
-        // Vérifier si tous les IDs existent
+        List<ProductEntity> productEntities = productRepository.findAllById(productIds);
+
         if (productEntities.size() != productIds.size()) {
             throw new RessourceNotFoundException(ProductEntity.class.getSimpleName(), "Produit IDs not found in: " + productIds);
         }
 
-        AddressEntity addressEntity;
+        // --- Résolution de l'adresse ---
+        AddressEntity addressEntity = resolveAddress(orderCreateDTO);
 
-        if (orderCreateDTO.getAdresseId() != null) {
-            // Utiliser une adresse existante
-            addressEntity = addressRepository.findById(orderCreateDTO.getAdresseId())
-                    .orElseThrow(() -> new RessourceNotFoundException("AddressEntity", "Address ID not found: " + orderCreateDTO.getAdresseId()));
-        } else if (orderCreateDTO.getNewAddress() != null) {
-            // Vérifier si l'adresse existe déjà
-            AddressCreateDTO newAddressDTO = orderCreateDTO.getNewAddress();
-            Optional<AddressEntity> existingAddress = addressRepository.findByNumberAndStreetAndCityAndZipCodeAndCountry(
-                    newAddressDTO.getNumber(), newAddressDTO.getStreet(), newAddressDTO.getCity(), newAddressDTO.getZipCode(), newAddressDTO.getCountry());
-
-            if (existingAddress.isPresent()) {
-                addressEntity = existingAddress.get();
-            } else {
-                // Créer une nouvelle adresse
-                addressEntity = AddressEntity.builder()
-                        .number(newAddressDTO.getNumber())
-                        .street(newAddressDTO.getStreet())
-                        .zipCode(newAddressDTO.getZipCode())
-                        .country(newAddressDTO.getCountry())
-                        .city(newAddressDTO.getCity())
-                        .build();
-                addressRepository.save(addressEntity);
-            }
-        } else {
-            throw new MissingFieldException("adresseId or newAddress");
-        }
-
-        // Associer les produits à leur prix
+        // Map produit → prix
         Map<Long, Double> productPrices = productEntities.stream()
                 .collect(Collectors.toMap(ProductEntity::getId, ProductEntity::getPrice));
 
-        // Calcul du total
-        double total = orderCreateDTO.getOrderItemsCreateDTOList().stream()
-                .mapToDouble(item -> {
-                    Double price = productPrices.get(item.getProductId());
-                    return price != null ? price * item.getQuantity() : 0.0;
-                })
-                .sum();
+        // Vérification des stocks et prépa des entités
+        List<OrderItemEntity> orderItemEntities = new ArrayList<>();
+        List<StockEntity> stockEntitiesToUpdate = new ArrayList<>();
+        double total = 0.0;
 
-        // Création de la commande
+        for (OrderItemCreateDTO itemDTO : orderCreateDTO.getOrderItemsCreateDTOList()) {
+
+            StockEntity stockEntity = stockRepository.findByProductId(itemDTO.getProductId())
+                    .orElseThrow(() -> new RessourceNotFoundException("This product does not have a stock", itemDTO.getProductId()));
+
+            int newQuantity = stockEntity.getQuantity() - itemDTO.getQuantity();
+            UtilsClass.validateQuantityInRange(newQuantity, stockEntity);
+
+            stockEntity.setQuantity(newQuantity);
+            stockEntitiesToUpdate.add(stockEntity);
+
+            OrderItemEntity orderItem = new OrderItemEntity();
+            orderItem.setId(new OrderItemId(null, itemDTO.getProductId())); // On settra l'orderId après
+            orderItem.setQuantity(itemDTO.getQuantity());
+            orderItemEntities.add(orderItem);
+
+            Double price = productPrices.get(itemDTO.getProductId());
+            total += price != null ? price * itemDTO.getQuantity() : 0.0;
+        }
+
+        // --- Création de la commande ---
         OrderEntity orderEntity = OrderEntity.builder()
                 .orderDate(LocalDate.now())
                 .orderTime(LocalTime.now())
@@ -211,37 +199,47 @@ public class OrderService {
 
         orderRepository.save(orderEntity);
 
-        List<OrderItemEntity> orderItemEntityList = new ArrayList<>();
-        // Enregistrer chaque ligne de commande
-        for (OrderItemCreateDTO orderItemDTO : orderCreateDTO.getOrderItemsCreateDTOList()) {
-            OrderItemEntity orderItemEntity = new OrderItemEntity();
-            orderItemEntity.setId(new OrderItemId(orderEntity.getId(), orderItemDTO.getProductId())); // Clé composite
-            orderItemEntity.setQuantity(orderItemDTO.getQuantity());
-
-            // Mise à jour du stock
-            StockEntity stockEntity = stockRepository.findByProductId(orderItemDTO.getProductId())
-                    .orElseThrow(() -> new RessourceNotFoundException("This product does not have a stock", orderItemDTO.getProductId()));
-
-            // Calcul de la nouvelle quantité
-            int quantity = stockEntity.getQuantity() - orderItemDTO.getQuantity();
-
-            UtilsClass.validateQuantityInRange(quantity, stockEntity);  // Vérification de la quantité
-
-            // Mise à jour du stock
-            stockEntity.setQuantity(quantity);
-
-            // Sauvegarde du stock mis à jour et de l'élément de commande
-            stockRepository.save(stockEntity);
-            orderItemRepository.save(orderItemEntity);
-
-
-            orderItemEntityList.add(orderItemEntity);
+        // Lier les items à la commande et sauvegarder
+        for (OrderItemEntity item : orderItemEntities) {
+            item.setId(new OrderItemId(orderEntity.getId(), item.getId().getProductId()));
+            orderItemRepository.save(item);
         }
 
-        OrderDTO orderDTO = orderMapper.toDTO(orderEntity);
+        // Mise à jour des stocks
+        stockRepository.saveAll(stockEntitiesToUpdate);
 
-        orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItemEntityList));
+        OrderDTO orderDTO = orderMapper.toDTO(orderEntity);
+        orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItemEntities));
         return orderDTO;
+    }
+
+    private AddressEntity resolveAddress(OrderCreateDTO orderCreateDTO) {
+        if (orderCreateDTO.getAdresseId() != null) {
+            return addressRepository.findById(orderCreateDTO.getAdresseId())
+                    .orElseThrow(() -> new RessourceNotFoundException("AddressEntity", "Address ID not found: " + orderCreateDTO.getAdresseId()));
+        }
+
+        if (orderCreateDTO.getNewAddress() != null) {
+            AddressCreateDTO newAddressDTO = orderCreateDTO.getNewAddress();
+            return addressRepository.findByNumberAndStreetAndCityAndZipCodeAndCountry(
+                    newAddressDTO.getNumber(),
+                    newAddressDTO.getStreet(),
+                    newAddressDTO.getCity(),
+                    newAddressDTO.getZipCode(),
+                    newAddressDTO.getCountry()
+            ).orElseGet(() -> {
+                AddressEntity address = AddressEntity.builder()
+                        .number(newAddressDTO.getNumber())
+                        .street(newAddressDTO.getStreet())
+                        .zipCode(newAddressDTO.getZipCode())
+                        .country(newAddressDTO.getCountry())
+                        .city(newAddressDTO.getCity())
+                        .build();
+                return addressRepository.save(address);
+            });
+        }
+
+        throw new MissingFieldException("adresseId or newAddress");
     }
 
     public OrderDTO updateOrderStatus(Long orderId, StatusEnum newStatus) {

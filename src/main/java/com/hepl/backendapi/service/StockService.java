@@ -6,6 +6,7 @@ import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.StockMapper;
 import com.hepl.backendapi.repository.dbtransac.StockRepository;
+import com.hepl.backendapi.utils.UtilsClass;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,6 +40,8 @@ public class StockService {
     public StockDTO updateStock(Long productId, Integer quantity)
     {
         StockEntity stockEntity = stockRepository.findByProductId(productId).orElseThrow(() -> new RessourceNotFoundException("This product does have a stock", productId));
+
+        UtilsClass.validateQuantityInRange(quantity, stockEntity);
 
         stockEntity.setQuantity(quantity);
         stockRepository.save(stockEntity);
