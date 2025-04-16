@@ -18,6 +18,8 @@ public class SAVDTO {
 
     private Long orderId;
 
+    private String description;
+
     private RequestTypeEnum requestType;
 
     private LocalDateTime createdAt;

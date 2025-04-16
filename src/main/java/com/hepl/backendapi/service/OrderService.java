@@ -63,10 +63,51 @@ public class OrderService {
         this.stockRepository = stockRepository;
     }
 
+    @Transactional
     public List<OrderDTO> getAllOrders() {
         List<OrderEntity> orderEntities = orderRepository.findAll();
-        return orderMapper.toDTOList(orderEntities);
+
+        // 1. Extraire les IDs des commandes
+        List<Long> orderIds = orderEntities.stream()
+                .map(OrderEntity::getId)
+                .collect(Collectors.toList());
+
+        // 2. Récupérer tous les OrderItems associés à ces commandes
+        List<OrderItemEntity> allOrderItems = orderItemRepository.findAllByIdOrderIdIn(orderIds);
+
+        // 3. Grouper les OrderItems par commande
+        Map<Long, List<OrderItemEntity>> itemsByOrderId = allOrderItems.stream()
+                .collect(Collectors.groupingBy(orderItem -> orderItem.getId().getOrderId()));
+
+        // 4. Récupérer tous les trackingIds (non null)
+        List<Long> trackingIds = orderEntities.stream()
+                .map(OrderEntity::getTrackingId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // 5. Récupérer tous les TrackingEntity
+        List<TrackingEntity> trackingEntities = trackingRepository.findAllById(trackingIds);
+        Map<Long, TrackingEntity> trackingById = trackingEntities.stream()
+                .collect(Collectors.toMap(TrackingEntity::getId, t -> t));
+
+        // 6. Construire les DTO enrichis
+        return orderEntities.stream().map(orderEntity -> {
+            OrderDTO dto = orderMapper.toDTO(orderEntity);
+
+            List<OrderItemEntity> itemEntities = itemsByOrderId.getOrDefault(orderEntity.getId(), Collections.emptyList());
+            dto.setOrderItems(orderItemMapper.toDTOList(itemEntities));
+
+            if (orderEntity.getTrackingId() != null) {
+                TrackingEntity trackingEntity = trackingById.get(orderEntity.getTrackingId());
+                if (trackingEntity != null) {
+                    dto.setTracking(trackingMapper.toTrackingDTO(trackingEntity));
+                }
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
+
 
 
     public OrderDTO getOrderById(Long id) {

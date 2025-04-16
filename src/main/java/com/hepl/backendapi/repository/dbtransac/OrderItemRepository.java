@@ -12,6 +12,7 @@ import java.util.List;
 public interface OrderItemRepository extends JpaRepository<OrderItemEntity, OrderItemId> {
     List<OrderItemEntity> findAllByIdOrderId(Long orderId);
 
+    List<OrderItemEntity> findAllByIdOrderIdIn(List<Long> orderIds);
     @Transactional
     @Modifying
     @Query("DELETE FROM OrderItemEntity oi WHERE oi.id.orderId = :orderId")

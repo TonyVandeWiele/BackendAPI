@@ -1,9 +1,14 @@
 package com.hepl.backendapi.utils.config.SpringSecurityConfig;
 
+import com.hepl.backendapi.entity.dbtransac.UserEntity;
+import com.hepl.backendapi.repository.dbtransac.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -20,7 +25,7 @@ import java.util.stream.Collectors;
  * - Ce convertisseur est utilisé après que le JWT ait été décodé et validé par le NimbusJwtDecoder.
  * - Le NimbusJwtDecoder se charge de valider la signature du JWT et de le décoder avant que ce
  *   convertisseur ne prenne le relais.
- * - Le convertisseur extrait l'accountId et les rôles du JWT et les transforme en une collection d'autorités
+ * - Le convertisseur extrait l'accountId et l'email du JWT et les transforme en une collection d'autorités
  *   (rôles) pour l'utilisateur.
  * - Le token d'authentification (JwtAuthenticationToken) est ensuite créé et injecté dans le contexte
  *   de sécurité de Spring, permettant à Spring Security de gérer l'authentification de l'utilisateur.
@@ -29,20 +34,25 @@ import java.util.stream.Collectors;
 @Component
 public class CustomJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
+    private final UserRepository userRepository;
+
+    public CustomJwtAuthenticationConverter(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        // Extraire l'accountId du JWT
-        String accountId = jwt.getClaimAsString("sub");
+        Long userId = Long.parseLong(jwt.getSubject()); // "sub"
 
-        // Extraire les rôles (en supposant qu'ils sont dans un champ "roles")
-        List<String> roles = jwt.getClaimAsStringList("roles");
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // Convertir les rôles en autorités
-        Collection<GrantedAuthority> authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .collect(Collectors.toList());
+        Collection<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + user.getRole())
+        );
 
-        // Créer un JwtAuthenticationToken avec les autorités et l'accountId
-        return new JwtAuthenticationToken(jwt, authorities, accountId);
+        CustomUserPrincipal principal = CustomUserPrincipal.fromEntity(user, authorities);
+
+        return new JwtAuthenticationToken(jwt, authorities, principal.getUsername());
     }
 }

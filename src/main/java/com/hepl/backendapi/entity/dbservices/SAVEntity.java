@@ -25,6 +25,8 @@ public class SAVEntity {
     @Column(name = "order_id")
     private Long orderId;
 
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "request_type")
     private RequestTypeEnum requestType;

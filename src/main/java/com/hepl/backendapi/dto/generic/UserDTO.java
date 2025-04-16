@@ -25,4 +25,5 @@ public class UserDTO {
     private LocalDate birthday;
     private MaritalStatus maritalStatus;
     private Double mensuelSalary;
+    private String role;
 }

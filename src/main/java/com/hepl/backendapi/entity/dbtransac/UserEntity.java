@@ -51,4 +51,6 @@ public class UserEntity {
 
     @Column(name = "monthly_salary")
     private Double mensuelSalary;
+
+    private String role;
 }
