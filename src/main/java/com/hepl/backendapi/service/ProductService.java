@@ -17,7 +17,13 @@ import com.hepl.backendapi.repository.dbtransac.OrderItemRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -104,6 +110,51 @@ public class ProductService {
         }
         productRepository.deleteById(id);
     }
+
+    public String createProductImage(Long productId, MultipartFile file) {
+        String contentType = file.getContentType();
+
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed.");
+        }
+
+        try {
+            String originalFileName = file.getOriginalFilename();
+            String cleanedFileName  = StringUtils.cleanPath(
+                    (originalFileName == null || originalFileName.isBlank())
+                            ? "unnamed"
+                            : originalFileName
+            );
+
+            // Empêche le path traversal
+            if (cleanedFileName.contains("..")) {
+                throw new IllegalArgumentException("Filename contains invalid path sequence: " + cleanedFileName);
+            }
+
+            ProductEntity product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), productId));
+
+            Path uploadPath = Paths.get("uploads/images/products");
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String newFileName = "product_" + productId + "_" + System.currentTimeMillis() + "_" + cleanedFileName;
+            Path filePath = uploadPath.resolve(newFileName).normalize();
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Mise à jour de l'image du produit
+            product.setImageUrl("/images/products/" + newFileName);
+            productRepository.save(product);
+
+            return product.getImageUrl();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to store image file: " + e.getMessage());
+        }
+    }
+
 
     @Transactional
     public ProductDTO createProduct(ProductCreateDTO productCreateDTO) {

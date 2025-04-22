@@ -25,4 +25,8 @@ public class ProductEntity {
         @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "category_id")
         private CategoryEntity category;
+
+        @Column(name = "image_url")
+        private String imageUrl;
+
 }

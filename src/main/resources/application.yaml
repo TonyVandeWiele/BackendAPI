@@ -16,12 +16,11 @@ spring:
       driver-class-name: com.mysql.cj.jdbc.Driver
 
       hikari:
-        maximum-pool-size: 5
-        minimum-idle: 1
+        maximum-pool-size: 10
+        minimum-idle: 5
         idle-timeout: 30000           # 30s avant de fermer une connexion idle
         connection-timeout: 30000     # 30s max pour obtenir une connexion
         leak-detection-threshold: 15000 # alerte si une connexion n’est pas rendue après 15s
-        auto-commit: false
 
     transac:
       jdbc-url: ${mysqlurlT}
@@ -30,12 +29,11 @@ spring:
       driver-class-name: com.mysql.cj.jdbc.Driver
 
       hikari:
-        maximum-pool-size: 5
-        minimum-idle: 1
+        maximum-pool-size: 10
+        minimum-idle: 5
         idle-timeout: 30000
         connection-timeout: 30000
         leak-detection-threshold: 15000
-        auto-commit: false
 
 
   security:

@@ -250,8 +250,8 @@ public class OrderService {
         // Mettre à jour le statut de la commande
         orderEntity.setStatus(newStatus);
 
-        // Créer un Tracking si le statut est "shipped" et qu'il n'existe pas déjà
-        if (newStatus == StatusEnum.shipped && orderEntity.getTrackingId() == null) {
+        // Créer un Tracking si le statut est "confirmed" et qu'il n'existe pas déjà
+        if (newStatus == StatusEnum.confirmed && orderEntity.getTrackingId() == null) {
             TrackingEntity trackingEntity = TrackingEntity.builder()
                     .orderId(orderEntity.getId())
                     .trackingNumber(generateTrackingId())
