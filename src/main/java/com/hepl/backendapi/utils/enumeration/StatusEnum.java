@@ -5,5 +5,5 @@ public enum StatusEnum {
     confirmed,
     shipped,
     delivered,
-    canceled,
+    cancelled,
 }

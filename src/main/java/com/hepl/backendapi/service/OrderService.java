@@ -250,6 +250,23 @@ public class OrderService {
         // Mettre à jour le statut de la commande
         orderEntity.setStatus(newStatus);
 
+        // Si la commande passe en annulée, remettre les produits en stock
+        if (newStatus == StatusEnum.cancelled) {
+            List<OrderItemEntity> orderItems = orderItemRepository.findAllByIdOrderId(orderId);
+
+            for (OrderItemEntity item : orderItems) {
+                StockEntity stockEntity = stockRepository.findByProductId(item.getId().getProductId()).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), "Stock ID not found: " + item.getId().getProductId()));
+
+                int newQuantity = stockEntity.getQuantity() - item.getQuantity();
+                UtilsClass.validateQuantityInRange(newQuantity, stockEntity);
+
+                stockEntity.setQuantity(newQuantity);
+
+                // Remettre la quantité en stock
+                stockRepository.save(stockEntity); // Sauvegarder les modifications de stock
+            }
+        }
+
         // Créer un Tracking si le statut est "confirmed" et qu'il n'existe pas déjà
         if (newStatus == StatusEnum.confirmed && orderEntity.getTrackingId() == null) {
             TrackingEntity trackingEntity = TrackingEntity.builder()
