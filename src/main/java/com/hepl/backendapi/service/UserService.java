@@ -15,6 +15,7 @@ import com.hepl.backendapi.repository.dbtransac.AddressRepository;
 import com.hepl.backendapi.repository.dbtransac.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,7 +28,6 @@ public class UserService {
     final AddressRepository addressRepository;
     final AddressMapper addressMapper;
 
-    @Autowired
     public UserService(UserRepository userRepository, UserMapper userMapper, AddressRepository addressRepository, AddressMapper addressMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
@@ -35,11 +35,13 @@ public class UserService {
         this.addressMapper = addressMapper;
     }
 
+    @Transactional
     public UserDTO getUserById(long id) {
         UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(UserEntity.class.getSimpleName(), id));
         return userMapper.toUserDTO(userEntity);
     }
 
+    @Transactional
     public UserDTO updateUserCreateDTO(Long id, UserUpdateDTO userUpdateDTO) { // A changer quand JWT
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RessourceNotFoundException(UserEntity.class.getSimpleName(), id));
@@ -59,6 +61,7 @@ public class UserService {
         return userMapper.toUserDTO(updatedUser);
     }
 
+    @Transactional
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         UserEntity userEntity = UserEntity.builder()
                 .email(userCreateDTO.getEmail())
@@ -70,6 +73,7 @@ public class UserService {
                 .mensuelSalary(userCreateDTO.getMensuelSalary())
                 .sexe(userCreateDTO.getSexe())
                 .clientAccountNumber(userCreateDTO.getClientAccountNumber()) // A verif
+                .role(userCreateDTO.getRole())
                 .build();
 
         AddressEntity addressEntity = saveAddressIfNotExists(userCreateDTO.getAddress());
@@ -78,6 +82,7 @@ public class UserService {
         return userMapper.toUserDTO(userEntitySaved);
     }
 
+    @Transactional
     public AddressEntity saveAddressIfNotExists(AddressCreateDTO addressDTO) {
         // Vérifie si l'adresse existe déjà dans la base de données
         Optional<AddressEntity> existingAddress = addressRepository.findByNumberAndStreetAndCityAndZipCodeAndCountry(addressDTO.getNumber(), addressDTO.getStreet(), addressDTO.getCity() ,addressDTO.getZipCode(), addressDTO.getCountry());

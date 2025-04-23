@@ -49,17 +49,20 @@ public class ProductService {
         this.stockMapper = stockMapper;
     }
 
+    @Transactional
     public List<ProductDTO> getAllProducts() {
         List<ProductEntity> productEntityList = productRepository.findAll();
 
         return productMapper.toDTOList(productEntityList);  // Utilisation du mapper injecté
     }
 
+    @Transactional
     public ProductDTO getProductById(Long id) {
         ProductEntity productEntity = productRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id));
         return productMapper.toDTO(productEntity);
     }
 
+    @Transactional
     public List<ProductDTO> getProductsByIds(List<Long> ids) {
         List<ProductEntity> products = productRepository.findAllById(ids);
 
@@ -80,12 +83,13 @@ public class ProductService {
                 .toList();
     }
 
-
+    @Transactional
     public List<ProductDTO> getAllProductsByCategoryName(String name) {
         List<ProductEntity> products = productRepository.findAllByCategoryName(name);
         return productMapper.toDTOList(products);
     }
 
+    @Transactional
     public List<ProductDTO> getAllProductsByOrderId(Long orderId) {
         // 1. On récupère les productId via la base dbtransac
         List<OrderItemEntity> orderLines = orderItemRepository.findAllByIdOrderId(orderId);
@@ -104,6 +108,7 @@ public class ProductService {
 
     }
 
+    @Transactional
     public void deleteProductById(Long id) {
         if (!productRepository.existsById(id)) {
             throw new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id);
@@ -111,6 +116,7 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
+    @Transactional
     public String createProductImage(Long productId, MultipartFile file) {
         String contentType = file.getContentType();
 

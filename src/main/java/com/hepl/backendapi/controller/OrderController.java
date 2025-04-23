@@ -25,7 +25,7 @@ public class OrderController {
 
     OrderService orderService;
 
-    OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 

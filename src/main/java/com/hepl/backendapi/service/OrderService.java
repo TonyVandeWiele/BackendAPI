@@ -4,11 +4,7 @@ import com.hepl.backendapi.dto.generic.OrderDTO;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.dto.post.OrderCreateDTO;
 import com.hepl.backendapi.dto.post.OrderItemCreateDTO;
-import com.hepl.backendapi.entity.dbtransac.AddressEntity;
-import com.hepl.backendapi.entity.dbtransac.ProductEntity;
-import com.hepl.backendapi.entity.dbtransac.StockEntity;
-import com.hepl.backendapi.entity.dbtransac.OrderEntity;
-import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
+import com.hepl.backendapi.entity.dbtransac.*;
 import com.hepl.backendapi.entity.dbservices.TrackingEntity;
 import com.hepl.backendapi.exception.DuplicateProductIdException;
 import com.hepl.backendapi.exception.MissingFieldException;
@@ -22,9 +18,9 @@ import com.hepl.backendapi.repository.dbtransac.OrderRepository;
 import com.hepl.backendapi.repository.dbservices.TrackingRepository;
 import com.hepl.backendapi.utils.UtilsClass;
 import com.hepl.backendapi.utils.compositekey.OrderItemId;
+import com.hepl.backendapi.utils.config.SpringSecurityConfig.CustomUserPrincipal;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +44,10 @@ public class OrderService {
     TrackingMapper trackingMapper;
     StockRepository stockRepository;
 
+    MailService mailService;
+
     @Autowired
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, OrderItemRepository orderItemRepository, OrderItemMapper orderItemMapper, ProductRepository productRepository, ProductMapper productMapper, AddressRepository addressRepository, TrackingRepository trackingRepository , AddressMapper addressMapper, TrackingMapper trackingMapper, StockRepository stockRepository, LocalContainerEntityManagerFactoryBean entityManagerFactory2, LocalContainerEntityManagerFactoryBean dbservicesEntityManagerFactory) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, OrderItemRepository orderItemRepository, OrderItemMapper orderItemMapper, ProductRepository productRepository, ProductMapper productMapper, AddressRepository addressRepository, TrackingRepository trackingRepository , AddressMapper addressMapper, TrackingMapper trackingMapper, StockRepository stockRepository, MailService mailService) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.orderItemRepository = orderItemRepository;
@@ -60,6 +58,7 @@ public class OrderService {
         this.trackingRepository = trackingRepository;
         this.trackingMapper = trackingMapper;
         this.stockRepository = stockRepository;
+        this.mailService = mailService;
     }
 
     @Transactional
@@ -109,6 +108,7 @@ public class OrderService {
 
 
 
+    @Transactional
     public OrderDTO getOrderById(Long id) {
         OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id));
 
@@ -242,6 +242,7 @@ public class OrderService {
         throw new MissingFieldException("adresseId or newAddress");
     }
 
+    @Transactional
     public OrderDTO updateOrderStatus(Long orderId, StatusEnum newStatus) {
         // Vérifier si la commande existe
         OrderEntity orderEntity = orderRepository.findById(orderId)
@@ -250,6 +251,27 @@ public class OrderService {
         // Mettre à jour le statut de la commande
         orderEntity.setStatus(newStatus);
 
+        // Si la commande passe en "delivered", envoyer un mail
+        if (newStatus == StatusEnum.delivered) {
+            /*CustomUserPrincipal principal = (CustomUserPrincipal) SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getPrincipal();
+
+            String email = principal.getEmail();
+            String name = principal.getName();*/
+
+            String email = "projetiot2@hotmail.com";
+            String name = "Tony";
+
+            // Construire le contenu du mail
+            String subject = name + " ! Votre commande a été livrée";
+            String body = String.format("Bonjour %s,\n\nVotre commande #%d a bien été livrée.\nMerci pour votre confiance !", name, orderId);
+
+            // Envoyer l'email via Mailgun
+            mailService.sendSimpleEmail(email, subject, body);
+        }
+
         // Si la commande passe en annulée, remettre les produits en stock
         if (newStatus == StatusEnum.cancelled) {
             List<OrderItemEntity> orderItems = orderItemRepository.findAllByIdOrderId(orderId);
@@ -257,7 +279,7 @@ public class OrderService {
             for (OrderItemEntity item : orderItems) {
                 StockEntity stockEntity = stockRepository.findByProductId(item.getId().getProductId()).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), "Stock ID not found: " + item.getId().getProductId()));
 
-                int newQuantity = stockEntity.getQuantity() - item.getQuantity();
+                int newQuantity = stockEntity.getQuantity() + item.getQuantity();
                 UtilsClass.validateQuantityInRange(newQuantity, stockEntity);
 
                 stockEntity.setQuantity(newQuantity);

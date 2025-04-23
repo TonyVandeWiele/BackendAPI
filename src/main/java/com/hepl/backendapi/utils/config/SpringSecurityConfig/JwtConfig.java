@@ -2,11 +2,14 @@ package com.hepl.backendapi.utils.config.SpringSecurityConfig;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PublicKey;
@@ -18,45 +21,31 @@ import java.security.KeyFactory;
 @Configuration
 public class JwtConfig {
 
-    private final PublicKey publicKey = loadPublicKey();
+    @Value("${jwt.secret}")
+    private String secretKeyB64;
 
     public String extractAccountId(String token) {
         return getClaims(token).getSubject();
     }
 
     private Claims getClaims(String token) {
+        SecretKey secretKey = loadSecretKey();
         return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-        RSAPublicKey publicKey = (RSAPublicKey) loadPublicKey();
-        return NimbusJwtDecoder.withPublicKey(publicKey).build();
+    public SecretKey loadSecretKey() {
+        byte[] decodedKey = Base64.getDecoder().decode(secretKeyB64);
+        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "HmacSHA256");
     }
 
-    private PublicKey loadPublicKey() {
-        try {
-            // Chargement de la ressource depuis le classpath
-            var resource = getClass().getClassLoader().getResourceAsStream("public.pem");
-            if (resource == null) {
-                throw new IllegalStateException("Fichier public.pem introuvable dans les ressources");
-            }
-
-            String key = new String(resource.readAllBytes())
-                    .replace("-----BEGIN PUBLIC KEY-----", "")
-                    .replace("-----END PUBLIC KEY-----", "")
-                    .replaceAll("\\s", "");
-
-            byte[] decoded = Base64.getDecoder().decode(key);
-            X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
-            return KeyFactory.getInstance("RSA").generatePublic(spec);
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur chargement clé publique", e);
-        }
+    @Bean
+    public JwtDecoder jwtDecoder(SecretKey secretKey) {
+        return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }
 
     public String stripBearerPrefix(String token) {

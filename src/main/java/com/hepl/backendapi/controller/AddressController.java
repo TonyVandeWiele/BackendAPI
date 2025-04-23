@@ -20,9 +20,9 @@ import java.util.List;
 @Tag(name = "Address management")
 @RequestMapping("/v1")
 public class AddressController {
-    AddressService addressService;
+    final AddressService addressService;
 
-    private AddressController(AddressService addressService) {
+    public AddressController(AddressService addressService) {
         this.addressService = addressService;
     }
 

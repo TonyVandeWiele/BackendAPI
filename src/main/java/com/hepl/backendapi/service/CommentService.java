@@ -9,6 +9,7 @@ import com.hepl.backendapi.repository.dbservices.CommentRepository;
 import com.hepl.backendapi.repository.dbtransac.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,7 @@ public class CommentService {
         this.productRepository = productRepository;
     }
 
+    @Transactional
     // Créer un commentaire
     public CommentDTO createComment(CommentCreateDTO commentCreateDTO) {
 
@@ -49,6 +51,7 @@ public class CommentService {
         return commentMapper.toDTO(commentEntity);
     }
 
+    @Transactional
     // Récupérer tous les commentaires d'un produit
     public List<CommentDTO> getCommentsByProductId(Long productId) {
         List<CommentEntity> commentEntities = commentRepository.findByProductId(productId);

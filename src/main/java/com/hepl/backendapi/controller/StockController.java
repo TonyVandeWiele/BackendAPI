@@ -20,7 +20,7 @@ public class StockController {
 
     StockService stockService;
 
-    StockController(StockService stockService) {
+    public StockController(StockService stockService) {
         this.stockService = stockService;
     }
 

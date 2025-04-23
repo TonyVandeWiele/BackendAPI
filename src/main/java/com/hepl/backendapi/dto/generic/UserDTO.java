@@ -2,6 +2,7 @@ package com.hepl.backendapi.dto.generic;
 
 
 import com.hepl.backendapi.utils.enumeration.MaritalStatus;
+import com.hepl.backendapi.utils.enumeration.RoleEnum;
 import com.hepl.backendapi.utils.enumeration.SexeEnum;
 import lombok.*;
 
@@ -25,5 +26,5 @@ public class UserDTO {
     private LocalDate birthday;
     private MaritalStatus maritalStatus;
     private Double mensuelSalary;
-    private String role;
+    private RoleEnum role;
 }

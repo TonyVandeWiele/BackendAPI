@@ -9,9 +9,9 @@ import com.hepl.backendapi.mappers.SAVMapper;
 import com.hepl.backendapi.repository.dbservices.SAVRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderRepository;
 import com.hepl.backendapi.utils.enumeration.RequestTypeEnum;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +33,7 @@ public class SAVService {
     }
 
     // Créer un ticket SAV
+    @Transactional
     public SAVDTO createSAVRequest(SAVCreateDTO savCreateDTO) {
 
         // Vérifier si l'OrderID existe dans la base de données
@@ -52,6 +53,7 @@ public class SAVService {
     }
 
     // Récupérer tous les tickets SAV
+    @Transactional
     public List<SAVDTO> getAllSAVRequests() {
         List<SAVEntity> savEntities = savRepository.findAll();
         return savEntities.stream()
@@ -60,6 +62,7 @@ public class SAVService {
     }
 
     // Modifier le statut d'un ticket SAV
+    @Transactional
     public SAVDTO updateSAVStatus(Long id, RequestTypeEnum newStatus) {
         SAVEntity savEntity = savRepository.findById(id)
                 .orElseThrow(() -> new RessourceNotFoundException("SAV ticket not found with ID: " + id));

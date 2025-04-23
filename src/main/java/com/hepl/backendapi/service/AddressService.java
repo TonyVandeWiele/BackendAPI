@@ -7,25 +7,28 @@ import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.AddressMapper;
 import com.hepl.backendapi.repository.dbtransac.AddressRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AddressService {
-    AddressRepository addressRepository;
-    AddressMapper addressMapper;
+    final AddressRepository addressRepository;
+    final AddressMapper addressMapper;
 
-    private AddressService(AddressRepository addressRepository, AddressMapper addressMapper) {
+    public AddressService(AddressRepository addressRepository, AddressMapper addressMapper) {
         this.addressRepository = addressRepository;
         this.addressMapper = addressMapper;
     }
 
+    @Transactional
     public AddressDTO getAddressById(Long id) {
         AddressEntity addressEntity = addressRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(AddressEntity.class.getSimpleName(), id));;
         return addressMapper.toDTO(addressEntity);
     }
 
+    @Transactional
     public List<AddressDTO> getAddressesByClientId(Long clientId) {
         List<Long> addressIds = addressRepository.findAddressIdsByClientId(clientId);
         List<AddressEntity> addressEntityList = new ArrayList<>();

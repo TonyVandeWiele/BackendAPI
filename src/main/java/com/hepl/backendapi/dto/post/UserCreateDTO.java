@@ -1,6 +1,7 @@
 package com.hepl.backendapi.dto.post;
 
 import com.hepl.backendapi.utils.enumeration.MaritalStatus;
+import com.hepl.backendapi.utils.enumeration.RoleEnum;
 import com.hepl.backendapi.utils.enumeration.SexeEnum;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -50,4 +51,6 @@ public class UserCreateDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "Monthly salary must be positive")
     @Digits(integer = 10, fraction = 2, message = "Salary must be a valid amount")
     private Double mensuelSalary;
+
+    private RoleEnum role;
 }

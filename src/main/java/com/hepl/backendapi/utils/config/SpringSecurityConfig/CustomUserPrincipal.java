@@ -1,6 +1,7 @@
 package com.hepl.backendapi.utils.config.SpringSecurityConfig;
 
 import com.hepl.backendapi.entity.dbtransac.UserEntity;
+import com.hepl.backendapi.utils.enumeration.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,7 +17,7 @@ public class CustomUserPrincipal implements UserDetails {
     private final String email;
     private final String name;
     private final String phone;
-    private final String role;
+    private final RoleEnum role;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override

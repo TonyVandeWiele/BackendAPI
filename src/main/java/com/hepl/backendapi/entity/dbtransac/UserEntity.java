@@ -1,6 +1,7 @@
 package com.hepl.backendapi.entity.dbtransac;
 
 import com.hepl.backendapi.utils.enumeration.MaritalStatus;
+import com.hepl.backendapi.utils.enumeration.RoleEnum;
 import com.hepl.backendapi.utils.enumeration.SexeEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -52,5 +53,7 @@ public class UserEntity {
     @Column(name = "monthly_salary")
     private Double mensuelSalary;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private RoleEnum role;
 }

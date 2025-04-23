@@ -20,9 +20,9 @@ import java.util.List;
 @Tag(name = "Category management")
 @RequestMapping("/v1")
 public class CategoryController {
-    CategoryService categoryService;
+    final CategoryService categoryService;
 
-    CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
