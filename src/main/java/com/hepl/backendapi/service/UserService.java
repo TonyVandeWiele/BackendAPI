@@ -82,8 +82,10 @@ public class UserService {
                 .role(userCreateDTO.getRole())
                 .build();
 
-        AddressEntity addressEntity = saveAddressIfNotExists(userCreateDTO.getAddress());
-        userEntity.setAddress(addressEntity);
+        if(userCreateDTO.getAddress() != null) {
+            AddressEntity addressEntity = saveAddressIfNotExists(userCreateDTO.getAddress());
+            userEntity.setAddress(addressEntity);
+        }
 
         UserEntity userEntitySaved = userRepository.save(userEntity);
         return userMapper.toUserDTO(userEntitySaved);
