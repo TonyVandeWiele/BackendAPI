@@ -59,19 +59,19 @@ src
 
 ## 📦 Dépendances utilisées
 
-| 📦 Dépendance | 🔍 Rôle |
-|--------------|--------|
-| `spring-boot-starter-web` | Création d’API REST |
-| `spring-boot-starter-data-jpa` | Gestion de la base de données avec JPA/Hibernate |
-| `mysql-connector-j` | Driver JDBC pour MySQL |
-| `lombok` | Réduction du boilerplate Java (Getters, Setters, etc.) |
-| `mapstruct` | Mapping d'objets Java |
+| 📦 Dépendance                         | 🔍 Rôle                                                         |
+|---------------------------------------|-----------------------------------------------------------------|
+| `spring-boot-starter-web`             | Création d’API REST                                             |
+| `spring-boot-starter-data-jpa`        | Gestion de la base de données avec JPA/Hibernate                |
+| `mysql-connector-j`                   | Driver JDBC pour MySQL                                          |
+| `lombok`                              | Réduction du boilerplate Java (Getters, Setters, etc.)          |
+| `mapstruct`                           | Mapping d'objets Java                                           |
 | `springdoc-openapi-starter-webmvc-ui` | Génération automatique de la documentation OpenAPI (Swagger UI) |
-| `spring-boot-starter-validation` | Validation des données (annotations `@Valid`, etc.) |
-| `spring-boot-starter-security` | Sécurisation des endpoints avec Spring Security |
-| `jjwt-api` | Gestion des tokens JWT (authentification) |
-| `spring-cloud-azure-starter-keyvault` | Intégration avec Azure Key Vault pour sécuriser les secrets |
-| `spring-boot-devtools` | Outils de développement (reload à chaud) |
+| `spring-boot-starter-validation`      | Validation des données (annotations `@Valid`, etc.)             |
+| `spring-boot-starter-security`        | Sécurisation des endpoints avec Spring Security                 |
+| `jjwt-api`                            | Gestion des tokens JWT (authentification)                       |
+| `spring-cloud-azure-starter-keyvault` | Intégration avec Azure Key Vault pour sécuriser les secrets     |
+| `spring-boot-devtools`                | Outils de développement (reload à chaud)                        |
 
 
 

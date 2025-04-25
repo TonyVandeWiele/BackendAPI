@@ -1,4 +1,4 @@
-package com.hepl.backendapi.utils.config.WebSocketConfig;
+package com.hepl.backendapi.utils.config.websocketconfig;
 
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * Ce gestionnaire extrait l'ID utilisateur depuis les attributs de session (définis par l’intercepteur),
- * et l'utilise pour créer un objet `Principal`. Cet objet représente l'utilisateur connecté,
+ * et l'utilise pour créer un objet Principal. Cet objet représente l'utilisateur connecté,
  * et est utilisé par Spring pour router les messages privés vers ce client. Ainsi,
  * chaque utilisateur est associé à un nom unique (ici : son accountId), et seuls
  * les messages lui étant destinés lui seront délivrés.

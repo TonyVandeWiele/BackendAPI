@@ -1,6 +1,5 @@
 package com.hepl.backendapi.entity.dbtransac;
 
-import com.hepl.backendapi.entity.dbservices.TrackingEntity;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import jakarta.persistence.*;
 import lombok.*;

@@ -19,6 +19,7 @@ public class MailService {
     @Value("${mailgun.domain}")
     private String domain;
 
+
     public void sendSimpleEmail(String to, String subject, String text) {
         HttpClient client = HttpClient.newHttpClient();
         String auth = Base64.getEncoder().encodeToString(("api:" + apiKey).getBytes());
@@ -35,7 +36,8 @@ public class MailService {
         try {
             client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace(); // ou logger proprement
+            e.printStackTrace();
         }
     }
+
 }

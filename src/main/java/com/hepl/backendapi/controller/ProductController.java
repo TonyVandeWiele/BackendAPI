@@ -5,7 +5,6 @@ import com.hepl.backendapi.dto.post.ProductCreateDTO;
 import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +26,7 @@ import java.util.List;
 @RequestMapping("/v1")
 public class ProductController {
 
-    ProductService productService;
+    final ProductService productService;
 
     public ProductController(ProductService productService) {
         this.productService = productService;

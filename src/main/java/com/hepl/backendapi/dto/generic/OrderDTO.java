@@ -1,7 +1,5 @@
 package com.hepl.backendapi.dto.generic;
 
-import com.hepl.backendapi.entity.dbtransac.OrderEntity;
-import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

@@ -1,6 +1,5 @@
 package com.hepl.backendapi.dto.update;
 
-import com.hepl.backendapi.dto.generic.AddressDTO;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.utils.enumeration.MaritalStatus;
 import com.hepl.backendapi.utils.enumeration.SexeEnum;
@@ -10,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -38,6 +36,5 @@ public class UserUpdateDTO {
     private SexeEnum sexe;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Monthly salary must be positive")
-    @Digits(integer = 10, fraction = 2, message = "Salary must be a valid amount")
     private Double mensuelSalary;
 }

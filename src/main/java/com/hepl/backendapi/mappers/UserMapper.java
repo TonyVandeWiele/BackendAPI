@@ -1,7 +1,6 @@
 package com.hepl.backendapi.mappers;
 
 import com.hepl.backendapi.dto.generic.UserDTO;
-import com.hepl.backendapi.dto.post.UserCreateDTO;
 import com.hepl.backendapi.dto.update.UserUpdateDTO;
 import com.hepl.backendapi.entity.dbtransac.UserEntity;
 import org.mapstruct.*;

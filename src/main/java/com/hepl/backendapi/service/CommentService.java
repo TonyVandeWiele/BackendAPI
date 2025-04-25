@@ -8,7 +8,6 @@ import com.hepl.backendapi.mappers.CommentMapper;
 import com.hepl.backendapi.repository.dbservices.CommentRepository;
 import com.hepl.backendapi.repository.dbtransac.ProductRepository;
 import com.hepl.backendapi.utils.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

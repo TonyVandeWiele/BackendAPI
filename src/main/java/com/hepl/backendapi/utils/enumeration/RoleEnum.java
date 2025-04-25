@@ -4,5 +4,5 @@ public enum RoleEnum {
     CLIENT,
     DELIVERY_AGENT,
     ADMIN,
-    AUTH_SERVER;
+    AUTH_SERVER
 }

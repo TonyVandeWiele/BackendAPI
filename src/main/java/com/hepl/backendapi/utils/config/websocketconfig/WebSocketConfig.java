@@ -1,4 +1,4 @@
-package com.hepl.backendapi.utils.config.WebSocketConfig;
+package com.hepl.backendapi.utils.config.websocketconfig;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

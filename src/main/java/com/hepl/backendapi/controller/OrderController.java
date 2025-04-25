@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/v1")
 public class OrderController {
 
-    OrderService orderService;
+    final OrderService orderService;
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;

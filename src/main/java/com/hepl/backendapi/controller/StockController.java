@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/v1")
 public class StockController {
 
-    StockService stockService;
+    final StockService stockService;
 
     public StockController(StockService stockService) {
         this.stockService = stockService;

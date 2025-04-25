@@ -2,15 +2,12 @@ package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.dto.generic.AddressDTO;
 import com.hepl.backendapi.entity.dbtransac.AddressEntity;
-import com.hepl.backendapi.entity.dbtransac.CategoryEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.AddressMapper;
 import com.hepl.backendapi.repository.dbtransac.AddressRepository;
-import com.hepl.backendapi.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,7 +22,7 @@ public class AddressService {
 
     @Transactional
     public AddressDTO getAddressById(Long id) {
-        AddressEntity addressEntity = addressRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(AddressEntity.class.getSimpleName(), id));;
+        AddressEntity addressEntity = addressRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(AddressEntity.class.getSimpleName(), id));
         return addressMapper.toDTO(addressEntity);
     }
 

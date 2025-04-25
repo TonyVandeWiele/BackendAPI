@@ -1,4 +1,4 @@
-package com.hepl.backendapi.utils.config.SpringSecurityConfig;
+package com.hepl.backendapi.utils.config.springsecurityconfig;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -11,14 +11,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.security.KeyFactory;
-import java.util.List;
 
 @Configuration
 public class JwtConfig {

@@ -1,4 +1,4 @@
-package com.hepl.backendapi.utils.config.WebSocketConfig;
+package com.hepl.backendapi.utils.config.websocketconfig;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -33,7 +33,6 @@ public class WebSocketEventListener {
         String sessionId = event.getSessionId();
         log.info("🔴 Déconnexion de session WebSocket: {}", sessionId);
 
-        // Tu peux aussi récupérer l'user :
         Principal user = event.getUser();
         if (user != null) {
             log.info("👋 User {} s’est déconnecté", user.getName());

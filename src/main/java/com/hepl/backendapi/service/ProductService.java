@@ -7,9 +7,7 @@ import com.hepl.backendapi.entity.dbtransac.ProductEntity;
 import com.hepl.backendapi.entity.dbtransac.StockEntity;
 import com.hepl.backendapi.entity.dbtransac.OrderItemEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
-import com.hepl.backendapi.mappers.OrderItemMapper;
 import com.hepl.backendapi.mappers.ProductMapper;
-import com.hepl.backendapi.mappers.StockMapper;
 import com.hepl.backendapi.repository.dbtransac.CategoryRepository;
 import com.hepl.backendapi.repository.dbtransac.ProductRepository;
 import com.hepl.backendapi.repository.dbtransac.StockRepository;
@@ -31,22 +29,18 @@ import java.util.List;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final OrderItemMapper orderItemMapper;
 
     private final CategoryRepository categoryRepository;
     private final StockRepository stockRepository;
     private final OrderItemRepository orderItemRepository;
-    private final StockMapper stockMapper;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper, OrderItemMapper orderItemMapper, CategoryRepository categoryRepository, StockRepository stockRepository, OrderItemRepository orderItemRepository, StockMapper stockMapper) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper, CategoryRepository categoryRepository, StockRepository stockRepository, OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
-        this.orderItemMapper = orderItemMapper;
         this.categoryRepository = categoryRepository;
         this.stockRepository = stockRepository;
         this.orderItemRepository = orderItemRepository;
-        this.stockMapper = stockMapper;
     }
 
     @Transactional
@@ -148,6 +142,11 @@ public class ProductService {
 
             String newFileName = "product_" + productId + "_" + System.currentTimeMillis() + "_" + cleanedFileName;
             Path filePath = uploadPath.resolve(newFileName).normalize();
+
+            if (!filePath.startsWith(uploadPath)) {
+                throw new IllegalArgumentException("Cannot store file outside the designated upload directory.");
+            }
+
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Mise à jour de l'image du produit
@@ -165,7 +164,7 @@ public class ProductService {
     @Transactional
     public ProductDTO createProduct(ProductCreateDTO productCreateDTO) {
 
-        // Check if category exist
+        // Check if category exists
         CategoryEntity category = categoryRepository.findById(productCreateDTO.getCategoryId())
                 .orElseThrow(() -> new RessourceNotFoundException(CategoryEntity.class.getSimpleName(), productCreateDTO.getCategoryId()));
 

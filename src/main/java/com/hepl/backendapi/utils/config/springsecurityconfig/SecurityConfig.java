@@ -1,6 +1,5 @@
-package com.hepl.backendapi.utils.config.SpringSecurityConfig;
+package com.hepl.backendapi.utils.config.springsecurityconfig;
 
-import com.hepl.backendapi.repository.dbtransac.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -9,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -24,14 +23,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable()) // ✅ on désactive le CSRF
+                .csrf(csrf -> csrf.disable()) // on désactive le CSRF car on utilise un JWT
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/",
-                                "/ws/**",
-                                "/v1/user"// ✅ autorisation du handshake WebSocket
+                                "/ws/**", // autorisation du handshake WebSocket
+                                "/v1/user"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

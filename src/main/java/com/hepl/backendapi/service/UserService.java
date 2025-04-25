@@ -1,7 +1,5 @@
 package com.hepl.backendapi.service;
 
-import com.azure.core.exception.ResourceNotFoundException;
-import com.azure.security.keyvault.jca.implementation.shaded.org.apache.http.protocol.HTTP;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.dto.post.UserCreateDTO;
 import com.hepl.backendapi.dto.update.UserUpdateDTO;
@@ -13,7 +11,6 @@ import com.hepl.backendapi.mappers.AddressMapper;
 import com.hepl.backendapi.mappers.UserMapper;
 import com.hepl.backendapi.repository.dbtransac.AddressRepository;
 import com.hepl.backendapi.repository.dbtransac.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

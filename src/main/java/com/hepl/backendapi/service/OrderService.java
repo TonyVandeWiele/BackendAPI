@@ -50,7 +50,7 @@ public class OrderService {
     MailService mailService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, OrderItemRepository orderItemRepository, OrderItemMapper orderItemMapper, ProductRepository productRepository, ProductMapper productMapper, AddressRepository addressRepository, TrackingRepository trackingRepository , AddressMapper addressMapper, TrackingMapper trackingMapper, StockRepository stockRepository, MailService mailService) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, OrderItemRepository orderItemRepository, OrderItemMapper orderItemMapper, ProductRepository productRepository, ProductMapper productMapper, AddressRepository addressRepository, TrackingRepository trackingRepository , TrackingMapper trackingMapper, StockRepository stockRepository, MailService mailService) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.orderItemRepository = orderItemRepository;
@@ -140,7 +140,7 @@ public class OrderService {
 
         if (orderEntity.getTrackingId() != null) {
             // Récupération du tracking associé
-            TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), orderEntity.getTrackingId()));;
+            TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), orderEntity.getTrackingId()));
             orderDTO.setTracking(trackingMapper.toTrackingDTO(trackingEntity));
         }
 
@@ -239,35 +239,6 @@ public class OrderService {
         return orderDTO;
     }
 
-    private AddressEntity resolveAddress(OrderCreateDTO orderCreateDTO) {
-        if (orderCreateDTO.getAdresseId() != null) {
-            return addressRepository.findById(orderCreateDTO.getAdresseId())
-                    .orElseThrow(() -> new RessourceNotFoundException("AddressEntity", "Address ID not found: " + orderCreateDTO.getAdresseId()));
-        }
-
-        if (orderCreateDTO.getNewAddress() != null) {
-            AddressCreateDTO newAddressDTO = orderCreateDTO.getNewAddress();
-            return addressRepository.findByNumberAndStreetAndCityAndZipCodeAndCountry(
-                    newAddressDTO.getNumber(),
-                    newAddressDTO.getStreet(),
-                    newAddressDTO.getCity(),
-                    newAddressDTO.getZipCode(),
-                    newAddressDTO.getCountry()
-            ).orElseGet(() -> {
-                AddressEntity address = AddressEntity.builder()
-                        .number(newAddressDTO.getNumber())
-                        .street(newAddressDTO.getStreet())
-                        .zipCode(newAddressDTO.getZipCode())
-                        .country(newAddressDTO.getCountry())
-                        .city(newAddressDTO.getCity())
-                        .build();
-                return addressRepository.save(address);
-            });
-        }
-
-        throw new MissingFieldException("adresseId or newAddress");
-    }
-
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, StatusEnum newStatus) {
         // Vérifier si la commande existe
@@ -277,55 +248,7 @@ public class OrderService {
         // Mettre à jour le statut de la commande
         orderEntity.setStatus(newStatus);
 
-        // Si la commande passe en "delivered", envoyer un mail
-        if (newStatus == StatusEnum.delivered) {
-            String name = SecurityUtils.getCurrentUserDetails().getName();
-            //String email = userDTO.getEmail();
-            String email = "projetiot2@hotmail.com";
-
-            // Construire le contenu du mail
-            String subject = name + " ! Votre commande a été livrée";
-            String body = String.format("Bonjour %s,\n\nVotre commande #%d a bien été livrée.\nMerci pour votre confiance !", name, orderId);
-
-            // Envoyer l'email via Mailgun
-            mailService.sendSimpleEmail(email, subject, body);
-
-            if(orderEntity.getTrackingId() != null) {
-                TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), "Tracking ID not found: " + orderEntity.getTrackingId()));
-                trackingEntity.setDeliveryDate(LocalDateTime.now());
-            }
-        }
-
-        // Si la commande passe en annulée, remettre les produits en stock
-        if (newStatus == StatusEnum.cancelled) {
-            List<OrderItemEntity> orderItems = orderItemRepository.findAllByIdOrderId(orderId);
-
-            for (OrderItemEntity item : orderItems) {
-                StockEntity stockEntity = stockRepository.findByProductId(item.getId().getProductId()).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), "Stock ID not found: " + item.getId().getProductId()));
-
-                int newQuantity = stockEntity.getQuantity() + item.getQuantity();
-                UtilsClass.validateQuantityInRange(newQuantity, stockEntity);
-
-                stockEntity.setQuantity(newQuantity);
-
-                // Remettre la quantité en stock
-                stockRepository.save(stockEntity); // Sauvegarder les modifications de stock
-            }
-        }
-
-        // Créer un Tracking si le statut est "confirmed" et qu'il n'existe pas déjà
-        if (newStatus == StatusEnum.confirmed && orderEntity.getTrackingId() == null) {
-            TrackingEntity trackingEntity = TrackingEntity.builder()
-                    .orderId(orderEntity.getId())
-                    .trackingNumber(generateTrackingId())
-                    .estimateDeliveryDate(LocalDateTime.now().plusDays(3))
-                    .shipmentDate(LocalDateTime.now().plusDays(1))
-                    .addressId(orderEntity.getAddress().getId())
-                    .build();
-
-            trackingRepository.save(trackingEntity); // Sauvegarder le tracking dans la base
-            orderEntity.setTrackingId(trackingEntity.getId()); // Lier le tracking à la commande
-        }
+        handleStatusSpecificActions(orderEntity, newStatus);
 
         // Sauvegarder la commande avec le nouveau statut et éventuellement le tracking associé
         orderRepository.save(orderEntity);
@@ -381,8 +304,105 @@ public class OrderService {
     }
 
 
+    private void handleStatusSpecificActions(OrderEntity order, StatusEnum newStatus) {
+        switch (newStatus) {
+            case delivered -> handleDeliveredStatus(order);
+            case cancelled -> handleCancelledStatus(order);
+            case confirmed -> handleConfirmedStatus(order);
+        }
+    }
+
+    public void sendDeliveryNotification(OrderEntity order) {
+        String name = SecurityUtils.getCurrentUserDetails().getName();
+        String email = "projetiot2@hotmail.com";
+
+        String subject = String.format("%s ! Votre commande a été livrée", name);
+        String body = String.format("""
+                Bonjour %s,
+                Votre commande #%d a bien été livrée.\
+                
+                Merci pour votre confiance !""", name, order.getId());
+
+        mailService.sendSimpleEmail(email, subject, body);
+    }
+
+    public void updateTrackingDeliveryDate(OrderEntity order) {
+        if (order.getTrackingId() != null) {
+            TrackingEntity tracking = trackingRepository.findById(order.getTrackingId())
+                    .orElseThrow(() -> new RessourceNotFoundException(
+                            TrackingEntity.class.getSimpleName(),
+                            "Tracking not found: " + order.getTrackingId()));
+
+            tracking.setDeliveryDate(LocalDateTime.now());
+            trackingRepository.save(tracking);
+        }
+    }
+
+    private void handleConfirmedStatus(OrderEntity order) {
+        TrackingEntity trackingEntity = TrackingEntity.builder()
+                .orderId(order.getId())
+                .trackingNumber(generateTrackingId())
+                .estimateDeliveryDate(LocalDateTime.now().plusDays(3))
+                .shipmentDate(LocalDateTime.now().plusDays(1))
+                .addressId(order.getAddress().getId())
+                .build();
+
+        trackingRepository.save(trackingEntity); // Sauvegarder le tracking dans la base
+        order.setTrackingId(trackingEntity.getId()); // Lier le tracking à la commande
+    }
+
+    private void handleCancelledStatus(OrderEntity order) {
+        List<OrderItemEntity> orderItems = orderItemRepository.findAllByIdOrderId(order.getId());
+
+        for (OrderItemEntity item : orderItems) {
+            StockEntity stockEntity = stockRepository.findByProductId(item.getId().getProductId()).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), "Stock ID not found: " + item.getId().getProductId()));
+
+            int newQuantity = stockEntity.getQuantity() + item.getQuantity();
+            UtilsClass.validateQuantityInRange(newQuantity, stockEntity);
+
+            stockEntity.setQuantity(newQuantity);
+
+            // Remettre la quantité en stock
+            stockRepository.save(stockEntity); // Sauvegarder les modifications de stock
+        }
+    }
+
+    private void handleDeliveredStatus(OrderEntity order) {
+        sendDeliveryNotification(order);
+        updateTrackingDeliveryDate(order);
+    }
 
     private String generateTrackingId() {
         return "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    // Check si idAdresse présent sinon, check si adresse déjà présente en BD sinon, création d'une adresse
+    private AddressEntity resolveAddress(OrderCreateDTO orderCreateDTO) {
+        if (orderCreateDTO.getAdresseId() != null) {
+            return addressRepository.findById(orderCreateDTO.getAdresseId())
+                    .orElseThrow(() -> new RessourceNotFoundException("AddressEntity", "Address ID not found: " + orderCreateDTO.getAdresseId()));
+        }
+
+        if (orderCreateDTO.getNewAddress() != null) {
+            AddressCreateDTO newAddressDTO = orderCreateDTO.getNewAddress();
+            return addressRepository.findByNumberAndStreetAndCityAndZipCodeAndCountry(
+                    newAddressDTO.getNumber(),
+                    newAddressDTO.getStreet(),
+                    newAddressDTO.getCity(),
+                    newAddressDTO.getZipCode(),
+                    newAddressDTO.getCountry()
+            ).orElseGet(() -> {
+                AddressEntity address = AddressEntity.builder()
+                        .number(newAddressDTO.getNumber())
+                        .street(newAddressDTO.getStreet())
+                        .zipCode(newAddressDTO.getZipCode())
+                        .country(newAddressDTO.getCountry())
+                        .city(newAddressDTO.getCity())
+                        .build();
+                return addressRepository.save(address);
+            });
+        }
+
+        throw new MissingFieldException("adresseId or newAddress");
     }
 }

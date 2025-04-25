@@ -1,15 +1,13 @@
-package com.hepl.backendapi.utils.config.SpringSecurityConfig;
+package com.hepl.backendapi.utils.config.springsecurityconfig;
 
 import com.hepl.backendapi.entity.dbtransac.UserEntity;
 import com.hepl.backendapi.mappers.UserMapper;
 import com.hepl.backendapi.repository.dbtransac.UserRepository;
 import com.hepl.backendapi.utils.enumeration.RoleEnum;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -17,12 +15,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * CustomJwtAuthenticationConverter est un convertisseur personnalisé qui extrait les informations
  * pertinentes du JWT, telles que l'accountId et les rôles, et les transforme en un token d'authentification.
- *
  * Important :
  * - Ce convertisseur est utilisé après que le JWT ait été décodé et validé par le NimbusJwtDecoder.
  * - Le NimbusJwtDecoder se charge de valider la signature du JWT et de le décoder avant que ce

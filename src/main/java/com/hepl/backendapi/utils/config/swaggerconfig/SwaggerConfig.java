@@ -1,4 +1,4 @@
-package com.hepl.backendapi.utils.config.Swagger;
+package com.hepl.backendapi.utils.config.swaggerconfig;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

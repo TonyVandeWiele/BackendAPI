@@ -1,6 +1,6 @@
-package com.hepl.backendapi.utils.config.WebSocketConfig;
+package com.hepl.backendapi.utils.config.websocketconfig;
 
-import com.hepl.backendapi.utils.config.SpringSecurityConfig.JwtConfig;
+import com.hepl.backendapi.utils.config.springsecurityconfig.JwtConfig;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;

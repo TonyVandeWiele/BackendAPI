@@ -8,7 +8,6 @@ import jakarta.validation.constraints.*;
 
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -42,7 +41,6 @@ public class UserCreateDTO {
     private SexeEnum sexe;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Monthly salary must be positive")
-    @Digits(integer = 10, fraction = 2, message = "Salary must be a valid amount")
     private Double mensuelSalary;
 
     @NotNull(message = "Role is required")

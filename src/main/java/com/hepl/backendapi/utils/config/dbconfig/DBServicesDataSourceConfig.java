@@ -1,4 +1,4 @@
-package com.hepl.backendapi.utils.config.DBConfig;
+package com.hepl.backendapi.utils.config.dbconfig;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

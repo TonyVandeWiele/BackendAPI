@@ -24,7 +24,7 @@ public class PrivateChatController {
     }
 
     @MessageMapping("/private-message")
-    public PrivateMessageDTO handlePrivateMessage(@Payload PrivateMessageDTO message, Principal principal) throws InterruptedException {
+    public PrivateMessageDTO handlePrivateMessage(@Payload PrivateMessageDTO message, Principal principal) {
         message.setFromAccountId(principal.getName());
         messagingTemplate.convertAndSendToUser(message.getToAccountId(),"/private", message);
         return message;

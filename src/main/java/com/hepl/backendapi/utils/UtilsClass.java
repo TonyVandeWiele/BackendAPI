@@ -1,15 +1,7 @@
 package com.hepl.backendapi.utils;
 
-import com.hepl.backendapi.dto.generic.UserDTO;
 import com.hepl.backendapi.entity.dbtransac.StockEntity;
 import com.hepl.backendapi.exception.InvalidValueException;
-import jakarta.validation.ConstraintViolationException;
-import org.apache.catalina.User;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.Collections;
 
 public class UtilsClass {
 

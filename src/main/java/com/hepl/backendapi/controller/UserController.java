@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @RequestMapping("/v1")
 public class UserController {
 
-    UserService userService;
+    final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
