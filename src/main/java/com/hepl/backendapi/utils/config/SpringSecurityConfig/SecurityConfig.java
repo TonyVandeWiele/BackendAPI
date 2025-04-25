@@ -30,7 +30,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/",
-                                "/ws/**"        // ✅ autorisation du handshake WebSocket
+                                "/ws/**",
+                                "/v1/user"// ✅ autorisation du handshake WebSocket
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
