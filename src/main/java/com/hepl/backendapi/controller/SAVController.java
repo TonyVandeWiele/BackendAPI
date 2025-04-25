@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class SAVController {
         this.savService = savService;
     }
 
+    @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Create an SAV request")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "SAV Request created successfully"),
@@ -41,6 +43,7 @@ public class SAVController {
         return ResponseEntity.ok(savService.createSAVRequest(savCreateDTO));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all SAV requests")
     @ApiResponse(responseCode = "200", description = "SAV requests retrieved successfully")
     @GetMapping("/savtickets")
@@ -48,6 +51,7 @@ public class SAVController {
         return ResponseEntity.ok(savService.getAllSAVRequests());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update the status of a SAV ticket")
     @ApiResponse(responseCode = "200", description = "SAV ticket status updated successfully")
     @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation =ErrorResponse.class)))

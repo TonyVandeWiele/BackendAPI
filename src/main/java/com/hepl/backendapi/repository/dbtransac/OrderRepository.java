@@ -1,12 +1,15 @@
 package com.hepl.backendapi.repository.dbtransac;
 
 import com.hepl.backendapi.entity.dbtransac.OrderEntity;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+    Optional<OrderEntity> findByClientId(Long clientId);
+
+    List<OrderEntity> findAllByClientId(Long clientId);
+
+    List<OrderEntity> findAllByDeliveryAgentId(Long deliveryAgentId);
 }

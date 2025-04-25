@@ -3,11 +3,13 @@ package com.hepl.backendapi.utils.config.SpringSecurityConfig;
 import com.hepl.backendapi.repository.dbtransac.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+@EnableMethodSecurity(prePostEnabled = true)
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -27,8 +29,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/v1/**",
-                                "/**",
+                                "/",
                                 "/ws/**"        // ✅ autorisation du handshake WebSocket
                         ).permitAll()
                         .anyRequest().authenticated()

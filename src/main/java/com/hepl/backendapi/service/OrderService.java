@@ -1,11 +1,13 @@
 package com.hepl.backendapi.service;
 
 import com.hepl.backendapi.dto.generic.OrderDTO;
+import com.hepl.backendapi.dto.generic.UserDTO;
 import com.hepl.backendapi.dto.post.AddressCreateDTO;
 import com.hepl.backendapi.dto.post.OrderCreateDTO;
 import com.hepl.backendapi.dto.post.OrderItemCreateDTO;
 import com.hepl.backendapi.entity.dbtransac.*;
 import com.hepl.backendapi.entity.dbservices.TrackingEntity;
+import com.hepl.backendapi.exception.AlreadyAssignedException;
 import com.hepl.backendapi.exception.DuplicateProductIdException;
 import com.hepl.backendapi.exception.MissingFieldException;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
@@ -16,11 +18,12 @@ import com.hepl.backendapi.repository.dbtransac.StockRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderItemRepository;
 import com.hepl.backendapi.repository.dbtransac.OrderRepository;
 import com.hepl.backendapi.repository.dbservices.TrackingRepository;
+import com.hepl.backendapi.utils.SecurityUtils;
 import com.hepl.backendapi.utils.UtilsClass;
 import com.hepl.backendapi.utils.compositekey.OrderItemId;
-import com.hepl.backendapi.utils.config.SpringSecurityConfig.CustomUserPrincipal;
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +67,24 @@ public class OrderService {
     @Transactional
     public List<OrderDTO> getAllOrders() {
         List<OrderEntity> orderEntities = orderRepository.findAll();
+        return getOrdersDetailsForUser(orderEntities);
+    }
+
+    @Transactional
+    public List<OrderDTO> getMyOrders() {
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+        List<OrderEntity> orderEntities = orderRepository.findAllByClientId(userId);
+        return getOrdersDetailsForUser(orderEntities);
+    }
+
+    @Transactional
+    public List<OrderDTO> getMyAssignedOrders() {
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+        List<OrderEntity> orderEntities = orderRepository.findAllByDeliveryAgentId(userId);
+        return getOrdersDetailsForUser(orderEntities);
+    }
+
+    private List<OrderDTO> getOrdersDetailsForUser(List<OrderEntity> orderEntities) {
 
         // 1. Extraire les IDs des commandes
         List<Long> orderIds = orderEntities.stream()
@@ -107,22 +128,22 @@ public class OrderService {
     }
 
 
-
     @Transactional
     public OrderDTO getOrderById(Long id) {
-        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(ProductEntity.class.getSimpleName(), id));
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), id));
 
         OrderDTO orderDTO = orderMapper.toDTO(orderEntity);
 
         // Récupération des produits associés
-        List<OrderItemEntity> orderItemEntityList = orderItemRepository.findAllByIdOrderId(id);
-        orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItemEntityList));
+        List<OrderItemEntity> orderItems = orderItemRepository.findAllByIdOrderId(orderEntity.getId());
+        orderDTO.setOrderItems(orderItemMapper.toDTOList(orderItems));
 
-        if(orderEntity.getTrackingId() != null) {
+        if (orderEntity.getTrackingId() != null) {
             // Récupération du tracking associé
             TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), orderEntity.getTrackingId()));;
             orderDTO.setTracking(trackingMapper.toTrackingDTO(trackingEntity));
         }
+
         return orderDTO;
     }
 
@@ -185,6 +206,11 @@ public class OrderService {
             total += price != null ? price * itemDTO.getQuantity() : 0.0;
         }
 
+        UserDTO userConnected = (UserDTO) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getDetails();
+
         // --- Création de la commande ---
         OrderEntity orderEntity = OrderEntity.builder()
                 .orderDate(LocalDate.now())
@@ -194,7 +220,7 @@ public class OrderService {
                 .trackingId(null)
                 .bankName("Unknown")
                 .address(addressEntity)
-                .clientId(1L)
+                .clientId(userConnected.getId())
                 .build();
 
         orderRepository.save(orderEntity);
@@ -253,16 +279,9 @@ public class OrderService {
 
         // Si la commande passe en "delivered", envoyer un mail
         if (newStatus == StatusEnum.delivered) {
-            /*CustomUserPrincipal principal = (CustomUserPrincipal) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
-
-            String email = principal.getEmail();
-            String name = principal.getName();*/
-
+            String name = SecurityUtils.getCurrentUserDetails().getName();
+            //String email = userDTO.getEmail();
             String email = "projetiot2@hotmail.com";
-            String name = "Tony";
 
             // Construire le contenu du mail
             String subject = name + " ! Votre commande a été livrée";
@@ -334,6 +353,29 @@ public class OrderService {
         // Supprimer la commande
         orderRepository.delete(orderEntity);
     }
+
+    @Transactional
+    public OrderDTO assignOrderToCurrentDeliveryAgent(Long orderId) {
+
+        Long deliveryAgentId = SecurityUtils.getCurrentUserDetails().getId();
+
+        OrderEntity orderEntity = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), orderId));
+
+        // Vérifier si la commande est déjà assignée
+        if (orderEntity.getDeliveryAgentId() != null) {
+            throw new AlreadyAssignedException("Order is already assigned to a delivery agent.");
+        }
+
+        // Assigner le livreur
+        orderEntity.setDeliveryAgentId(deliveryAgentId);
+
+        orderRepository.save(orderEntity);
+
+        return orderMapper.toDTO(orderEntity);
+    }
+
+
 
     private String generateTrackingId() {
         return "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();

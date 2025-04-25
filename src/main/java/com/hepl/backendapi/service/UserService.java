@@ -63,24 +63,32 @@ public class UserService {
 
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
+
+        String name = userCreateDTO.getName();
+        if (name == null || name.isBlank()) {
+            name = userCreateDTO.getEmail().split("@")[0];
+        }
+
         UserEntity userEntity = UserEntity.builder()
                 .email(userCreateDTO.getEmail())
                 .phone(userCreateDTO.getPhone())
-                .name(userCreateDTO.getName())
+                .name(name)
                 .birthday(userCreateDTO.getBirthday())
                 .registrationDate(LocalDateTime.now())
                 .maritalStatus(userCreateDTO.getMaritalStatus())
                 .mensuelSalary(userCreateDTO.getMensuelSalary())
                 .sexe(userCreateDTO.getSexe())
-                .clientAccountNumber(userCreateDTO.getClientAccountNumber()) // A verif
+                .clientAccountNumber(userCreateDTO.getClientAccountNumber())
                 .role(userCreateDTO.getRole())
                 .build();
 
         AddressEntity addressEntity = saveAddressIfNotExists(userCreateDTO.getAddress());
         userEntity.setAddress(addressEntity);
+
         UserEntity userEntitySaved = userRepository.save(userEntity);
         return userMapper.toUserDTO(userEntitySaved);
     }
+
 
     @Transactional
     public AddressEntity saveAddressIfNotExists(AddressCreateDTO addressDTO) {

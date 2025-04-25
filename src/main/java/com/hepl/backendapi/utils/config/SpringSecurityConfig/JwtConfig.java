@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PublicKey;
@@ -17,16 +18,22 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.security.KeyFactory;
+import java.util.List;
 
 @Configuration
 public class JwtConfig {
 
     @Value("${jwt.secret}")
-    private String secretKeyB64;
+    private String secretKey;
 
     public String extractAccountId(String token) {
         return getClaims(token).getSubject();
     }
+
+    public String extractRole(String token) {
+        return getClaims(token).get("role").toString();
+    }
+
 
     private Claims getClaims(String token) {
         SecretKey secretKey = loadSecretKey();
@@ -39,8 +46,9 @@ public class JwtConfig {
 
     @Bean
     public SecretKey loadSecretKey() {
-        byte[] decodedKey = Base64.getDecoder().decode(secretKeyB64);
-        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "HmacSHA256");
+        // On convertit la clé String en bytes directement
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        return new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
     @Bean

@@ -6,6 +6,7 @@ import com.hepl.backendapi.entity.dbtransac.CategoryEntity;
 import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.AddressMapper;
 import com.hepl.backendapi.repository.dbtransac.AddressRepository;
+import com.hepl.backendapi.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,13 +32,7 @@ public class AddressService {
     @Transactional
     public List<AddressDTO> getAddressesByClientId(Long clientId) {
         List<Long> addressIds = addressRepository.findAddressIdsByClientId(clientId);
-        List<AddressEntity> addressEntityList = new ArrayList<>();
-        for (Long addressId : addressIds) {
-            AddressEntity addressEntity = addressRepository.findById(addressId).orElse(null);
-            if (addressEntity != null) {
-                addressEntityList.add(addressEntity);
-            }
-        }
+        List<AddressEntity> addressEntityList = addressRepository.findAllById(addressIds);
         return addressMapper.toDTOList(addressEntityList);
     }
 }

@@ -1,6 +1,7 @@
 package com.hepl.backendapi.exception;
 
 import com.hepl.backendapi.utils.enumeration.StatusEnum;
+import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +11,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,6 +27,23 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ApiResponse(
+            responseCode = "403",
+            description = "Do not have permission to access this resource.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        String errorMessage = "You do not have permission to access this resource.";
+
+        return buildErrorResponse(errorMessage, HttpStatus.FORBIDDEN);
+    }
+    
+    @ExceptionHandler(AlreadyAssignedException.class)
+    public ResponseEntity<ErrorResponse> handleOrderAlreadyAssignedException(AlreadyAssignedException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
     public ResponseEntity<ErrorResponse> handleValidationExceptions(Exception ex) {
@@ -57,14 +76,14 @@ public class GlobalExceptionHandler {
 
     // Gérer les erreurs d'authentification
     // Gérer l'absence de JWT
-    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    @ExceptionHandler(exception = {AuthenticationCredentialsNotFoundException.class, JwtException.class})
     @ApiResponse(
             responseCode = "401",
-            description = "JWT token is missing or invalid",
+            description = "JWT token is missing, invalid or expired",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     public ResponseEntity<ErrorResponse> handleMissingJwtException(AuthenticationCredentialsNotFoundException ex) {
-        return buildErrorResponse("JWT token is missing or invalid", HttpStatus.UNAUTHORIZED);
+        return buildErrorResponse("JWT token is missing, invalid or expired", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(DataAccessException.class)

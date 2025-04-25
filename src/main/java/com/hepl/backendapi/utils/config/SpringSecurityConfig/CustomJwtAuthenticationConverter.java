@@ -1,7 +1,9 @@
 package com.hepl.backendapi.utils.config.SpringSecurityConfig;
 
 import com.hepl.backendapi.entity.dbtransac.UserEntity;
+import com.hepl.backendapi.mappers.UserMapper;
 import com.hepl.backendapi.repository.dbtransac.UserRepository;
+import com.hepl.backendapi.utils.enumeration.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -35,24 +37,33 @@ import java.util.stream.Collectors;
 public class CustomJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public CustomJwtAuthenticationConverter(UserRepository userRepository) {
+    public CustomJwtAuthenticationConverter(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        Long userId = Long.parseLong(jwt.getSubject()); // "sub"
+        String clientAccountNumber = jwt.getSubject(); // "sub"
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        // Récupération du rôle depuis le JWT claim
+        String roleClaim = jwt.getClaimAsString("Role");
+
+        // Récupération du role
+        String roleName = (roleClaim != null) ? roleClaim : RoleEnum.CLIENT.name();
 
         Collection<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole())
+                new SimpleGrantedAuthority("ROLE_" + roleName)
         );
 
-        CustomUserPrincipal principal = CustomUserPrincipal.fromEntity(user, authorities);
+        // Récupération de toutes les infos du client qui se connecte
+        UserEntity user = userRepository.findByClientAccountNumber(clientAccountNumber)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return new JwtAuthenticationToken(jwt, authorities, principal.getUsername());
+        JwtAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities);
+        token.setDetails(userMapper.toUserDTO(user));
+        return token;
     }
 }

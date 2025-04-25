@@ -44,4 +44,7 @@ public class OrderEntity {
 
     @Column(name = "client_id")
     private Long clientId;
+
+    @Column(name = "livreur_id")
+    private Long deliveryAgentId;
 }

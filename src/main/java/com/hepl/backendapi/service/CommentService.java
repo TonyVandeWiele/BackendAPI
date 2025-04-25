@@ -7,6 +7,7 @@ import com.hepl.backendapi.exception.RessourceNotFoundException;
 import com.hepl.backendapi.mappers.CommentMapper;
 import com.hepl.backendapi.repository.dbservices.CommentRepository;
 import com.hepl.backendapi.repository.dbtransac.ProductRepository;
+import com.hepl.backendapi.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,12 +40,14 @@ public class CommentService {
             throw new RessourceNotFoundException("Product ID not found: " + commentCreateDTO.getProductId());
         }
 
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+
         CommentEntity commentEntity = CommentEntity.builder()
                 .comment(commentCreateDTO.getComment())
                 .createdAt(LocalDateTime.now())
                 .rating(commentCreateDTO.getRating())
                 .productId(commentCreateDTO.getProductId())
-                .customerId(1L)
+                .customerId(userId)
                 .build();
 
         commentEntity = commentRepository.save(commentEntity);

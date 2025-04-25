@@ -5,6 +5,7 @@ import com.hepl.backendapi.dto.post.UserCreateDTO;
 import com.hepl.backendapi.dto.update.UserUpdateDTO;
 import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.UserService;
+import com.hepl.backendapi.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @Tag(name = "User management")
@@ -27,6 +31,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/current-time")
+    public String getCurrentTime() {
+        return LocalDateTime.now().toString();
+    }
+
     @Operation(summary = "Get user by ID")
     @ApiResponse(responseCode = "200", description = "User found")
     @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -35,6 +44,16 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @Operation(summary = "Get connected user info")
+    @ApiResponse(responseCode = "200", description = "User found")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @GetMapping("/me/user")
+    public ResponseEntity<UserDTO> fetchConnectedUser() {
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+        return ResponseEntity.ok(userService.getUserById(userId));
+    }
+
+    //@PreAuthorize("hasRole('AUTH_SERVER')")
     @Operation(summary = "Create a new user")
     @ApiResponse(responseCode = "201", description = "User successfully created")
     @ApiResponse(responseCode = "400", description = "Argument Not Valid", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -44,6 +63,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update a user by ID")
     @ApiResponse(responseCode = "200", description = "User successfully updated")
     @ApiResponse(responseCode = "400", description = "Argument Not Valid", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

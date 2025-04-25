@@ -30,7 +30,9 @@ public class HandshakeInterceptor implements org.springframework.web.socket.serv
             token = jwtService.stripBearerPrefix(token);
             try {
                 String accountId = jwtService.extractAccountId(token);
+                String role = jwtService.extractRole(token);
                 attributes.put("accountId", accountId);
+                attributes.put("role", role);
 
                 return true;
             } catch (Exception e) {

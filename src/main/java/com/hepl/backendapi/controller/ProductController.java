@@ -10,11 +10,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,7 +72,8 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    @Operation(summary = "Create a new product")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create a new product", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Product created successfully"),
             @ApiResponse(responseCode = "400", description = "Argument Not Valid or Quantity Out of Range",
@@ -84,7 +87,8 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "Upload an image for a product")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Upload an image for a product", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Image uploaded successfully",
                     content = @Content(schema = @Schema(implementation = String.class))),
@@ -103,8 +107,8 @@ public class ProductController {
         return ResponseEntity.ok(imageUrl);
     }
 
-
-    @Operation(summary = "Delete a product by ID")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete a product by ID", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "204", description = "Product deleted successfully")
     @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @DeleteMapping("/product/{id}")

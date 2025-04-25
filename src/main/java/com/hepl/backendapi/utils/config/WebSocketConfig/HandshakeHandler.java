@@ -21,8 +21,9 @@ public class HandshakeHandler extends DefaultHandshakeHandler {
     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
         String accountId = (String) attributes.get("accountId");
+        String role = (String) attributes.get("role");
         logger.info("👤 Nouvel utilisateur connecté avec ID: {"+ accountId + "}");
 
-        return () -> accountId;
+        return () -> accountId + " : " + role ;
     }
 }

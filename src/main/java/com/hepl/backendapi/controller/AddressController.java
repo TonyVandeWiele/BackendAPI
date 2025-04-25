@@ -3,12 +3,14 @@ package com.hepl.backendapi.controller;
 import com.hepl.backendapi.dto.generic.AddressDTO;
 import com.hepl.backendapi.exception.ErrorResponse;
 import com.hepl.backendapi.service.AddressService;
+import com.hepl.backendapi.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,5 +41,14 @@ public class AddressController {
     @GetMapping("/addresses/{clientId}")
     public ResponseEntity<List<AddressDTO>> getAllAddressesByClientId(@PathVariable Long clientId) {
         return ResponseEntity.ok(addressService.getAddressesByClientId(clientId));
+    }
+
+    @PreAuthorize("hasRole('CLIENT')")
+    @Operation(summary = "Get all the address ids for the connected client")
+    @ApiResponse(responseCode = "200", description = "Addresses retrieved successfully")
+    @GetMapping("/me/addresses")
+    public ResponseEntity<List<AddressDTO>> getAllMyAddresses() {
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+        return ResponseEntity.ok(addressService.getAddressesByClientId(userId));
     }
 }
