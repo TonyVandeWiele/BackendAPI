@@ -289,6 +289,11 @@ public class OrderService {
 
             // Envoyer l'email via Mailgun
             mailService.sendSimpleEmail(email, subject, body);
+
+            if(orderEntity.getTrackingId() != null) {
+                TrackingEntity trackingEntity = trackingRepository.findById(orderEntity.getTrackingId()).orElseThrow(() -> new RessourceNotFoundException(TrackingEntity.class.getSimpleName(), "Tracking ID not found: " + orderEntity.getTrackingId()));
+                trackingEntity.setDeliveryDate(LocalDateTime.now());
+            }
         }
 
         // Si la commande passe en annulée, remettre les produits en stock

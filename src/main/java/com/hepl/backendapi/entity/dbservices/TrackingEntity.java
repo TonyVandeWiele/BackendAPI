@@ -31,4 +31,7 @@ public class TrackingEntity {
 
     @Column(name = "address_id")
     private Long addressId;
+
+    @Column(name = "delivery_date")
+    private LocalDateTime deliveryDate;
 }

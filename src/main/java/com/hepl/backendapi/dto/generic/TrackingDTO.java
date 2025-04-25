@@ -16,4 +16,5 @@ public class TrackingDTO {
     private LocalDateTime shipmentDate;
     private LocalDateTime estimateDeliveryDate;
     private Long addressId;
+    private LocalDateTime deliveryDate;
 }

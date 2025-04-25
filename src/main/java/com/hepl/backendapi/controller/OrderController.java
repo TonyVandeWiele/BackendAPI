@@ -79,7 +79,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Update the status of an order", description = "If the status is updated to 'shipped', a tracking occurrence is automatically generated and linked to an order",security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Order status updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid parameter type. For StatusEnum, allowed values are: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELED", content = @Content (schema = @Schema(implementation = ErrorResponse.class)))

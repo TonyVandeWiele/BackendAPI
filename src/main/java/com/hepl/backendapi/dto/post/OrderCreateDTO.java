@@ -3,6 +3,7 @@ package com.hepl.backendapi.dto.post;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
@@ -23,5 +24,8 @@ public class OrderCreateDTO {
     @Valid
     @Schema(description = "New address details (optional if an address ID is provided)")
     private AddressCreateDTO newAddress; // Pour une nouvelle adresse
+
+    @Size(max = 1800, message = "Delivery Instruction must be at most 1800 characters")
+    private String deliveryInstruction;
 
 }
