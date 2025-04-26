@@ -7,10 +7,7 @@ import com.hepl.backendapi.dto.post.OrderCreateDTO;
 import com.hepl.backendapi.dto.post.OrderItemCreateDTO;
 import com.hepl.backendapi.entity.dbtransac.*;
 import com.hepl.backendapi.entity.dbservices.TrackingEntity;
-import com.hepl.backendapi.exception.AlreadyAssignedException;
-import com.hepl.backendapi.exception.DuplicateProductIdException;
-import com.hepl.backendapi.exception.MissingFieldException;
-import com.hepl.backendapi.exception.RessourceNotFoundException;
+import com.hepl.backendapi.exception.*;
 import com.hepl.backendapi.mappers.*;
 import com.hepl.backendapi.repository.dbtransac.AddressRepository;
 import com.hepl.backendapi.repository.dbtransac.ProductRepository;
@@ -245,6 +242,11 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), "Order ID not found: " + orderId));
 
+        // Si la commande est déjà annulée, interdire le changement de statut
+        if (orderEntity.getStatus() == StatusEnum.cancelled) {
+            throw new InvalidOrderStatusException("Cannot update status for a cancelled order.");
+        }
+
         // Mettre à jour le statut de la commande
         orderEntity.setStatus(newStatus);
 
@@ -302,7 +304,6 @@ public class OrderService {
 
         return orderMapper.toDTO(orderEntity);
     }
-
 
     private void handleStatusSpecificActions(OrderEntity order, StatusEnum newStatus) {
         switch (newStatus) {
