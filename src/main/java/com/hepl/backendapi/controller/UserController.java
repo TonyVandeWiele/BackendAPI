@@ -19,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @Tag(name = "User management")
@@ -44,6 +45,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @Operation(summary = "Get all users")
+    @ApiResponse(responseCode = "200", description = "Users found")
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>> fetchAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
     @Operation(summary = "Get connected user info")
     @ApiResponse(responseCode = "200", description = "User found")
     @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -63,6 +72,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    @PreAuthorize("hasRole('CLIENT')")
+    @Operation(summary = "Update connected user info")
+    @ApiResponse(responseCode = "200", description = "User successfully updated")
+    @ApiResponse(responseCode = "400", description = "Argument Not Valid", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "User not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @PutMapping("/me/user")
+    public ResponseEntity<UserDTO> updateConnectedUser(@Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+        UserDTO updatedUser = userService.updateUserDTO(userId, userUpdateDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update a user by ID")
     @ApiResponse(responseCode = "200", description = "User successfully updated")
@@ -71,7 +92,7 @@ public class UserController {
     @PutMapping("/user/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
 
-        UserDTO updatedUser = userService.updateUserCreateDTO(id, userUpdateDTO);
+        UserDTO updatedUser = userService.updateUserDTO(id, userUpdateDTO);
         return ResponseEntity.ok(updatedUser);
     }
 }

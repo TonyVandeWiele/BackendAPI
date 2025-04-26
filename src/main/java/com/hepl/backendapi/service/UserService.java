@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -39,19 +41,32 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTO updateUserCreateDTO(Long id, UserUpdateDTO userUpdateDTO) { // A changer quand JWT
+    public List<UserDTO> getAllUsers() {
+        List<UserEntity> userEntities = userRepository.findAll();
+        return userMapper.toUserDTOList(userEntities);
+    }
+
+    @Transactional
+    public UserDTO updateUserDTO(Long id, UserUpdateDTO userUpdateDTO) {
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RessourceNotFoundException(UserEntity.class.getSimpleName(), id));
 
-        // Si l'adresse a été modifiée, créer une nouvelle adresse
-        if (userUpdateDTO.getAddress() != null) {
-            AddressEntity newAddress = addressMapper.toEntity(userUpdateDTO.getAddress());
-            addressRepository.save(newAddress); // Sauvegarde la nouvelle adresse
-            existingUser.setAddress(newAddress); // Associe la nouvelle adresse à l'utilisateur
-        }
-
         // Mapping des nouveaux champs
         userMapper.updateUserFromDto(userUpdateDTO, existingUser);
+
+        // Si l'adresse a été modifiée et qu'elle est différente de l'existante
+        if (userUpdateDTO.getAddress() != null) {
+
+            AddressEntity newAddress = addressMapper.toEntity(userUpdateDTO.getAddress());
+
+            AddressEntity currentAddress = existingUser.getAddress();
+
+            // Si l'utilisateur n'a pas d'adresse ou si l'adresse est différente
+            if (currentAddress == null || !addressesAreEqual(newAddress, currentAddress)) {
+                AddressEntity newAddressSaved = addressRepository.save(newAddress);
+                existingUser.setAddress(newAddressSaved);
+            }
+        }
 
         UserEntity updatedUser = userRepository.save(existingUser);
 
@@ -101,4 +116,13 @@ public class UserService {
         AddressEntity newAddress = addressMapper.toEntity(addressDTO);
         return addressRepository.save(newAddress);
     }
+
+    private boolean addressesAreEqual(AddressEntity a1, AddressEntity a2) {
+        return Objects.equals(a1.getStreet(), a2.getStreet()) &&
+                Objects.equals(a1.getCity(), a2.getCity()) &&
+                Objects.equals(a1.getZipCode(), a2.getZipCode()) &&
+                Objects.equals(a1.getCountry(), a2.getCountry()) &&
+                Objects.equals(a1.getNumber(), a2.getNumber());
+    }
+
 }

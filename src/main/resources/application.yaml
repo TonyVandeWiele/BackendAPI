@@ -6,7 +6,6 @@ logging:
     org.springframework.transaction: DEBUG
     org.hibernate.transaction: DEBUG
 
-
 spring:
   datasource:
     services:
