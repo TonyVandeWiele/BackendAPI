@@ -34,6 +34,8 @@ public class OrderDTO {
 
     private AddressDTO address;
 
+    private String deliveryInstruction;
+
     private Long clientId;
 
     private Long deliveryAgentId;

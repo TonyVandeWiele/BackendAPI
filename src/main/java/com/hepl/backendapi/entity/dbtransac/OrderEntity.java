@@ -41,6 +41,9 @@ public class OrderEntity {
     @JoinColumn(name = "address_id")
     private AddressEntity address;
 
+    @Column(name = "delivery_instruction")
+    private String deliveryInstruction;
+
     @Column(name = "client_id")
     private Long clientId;
 

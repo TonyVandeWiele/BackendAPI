@@ -217,6 +217,7 @@ public class OrderService {
                 .trackingId(null)
                 .bankName("Unknown")
                 .address(addressEntity)
+                .deliveryInstruction(orderCreateDTO.getDeliveryInstruction())
                 .clientId(userConnected.getId())
                 .build();
 
