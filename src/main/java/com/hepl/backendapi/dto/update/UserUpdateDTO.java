@@ -19,10 +19,6 @@ public class UserUpdateDTO {
     @Size(max = 100, message = "Name must be at most 100 characters")
     private String name;
 
-    @Email(message = "Email must be valid")
-    @Size(max = 150, message = "Email must be at most 150 characters")
-    private String email;
-
     @Pattern(regexp = "^\\+?[0-9]{6,15}$", message = "Phone number must be valid")
     private String phone;
 

@@ -100,6 +100,18 @@ public class OrderController {
         return ResponseEntity.ok(updatedOrder);
     }
 
+    @PreAuthorize("hasRole('DELIVERY_AGENT')")
+    @Operation(summary = "Unassign the connected delivery agent from the specified order")
+    @ApiResponse(responseCode = "200", description = "Order delivery agent unassigned successfully")
+    @ApiResponse(responseCode = "409", description = "Conflict with another Delivery Agent", content = @Content (schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @PutMapping("/me/order/{orderId}/unassign-me")
+    public ResponseEntity<OrderDTO> unassignOrderFromMe(@PathVariable Long orderId) {
+        OrderDTO updatedOrder = orderService.unassignOrderFromCurrentDeliveryAgent(orderId);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+
     @Operation(summary = "Delete an order by ID")
     @ApiResponse(responseCode = "204", description = "Order deleted successfully")
     @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

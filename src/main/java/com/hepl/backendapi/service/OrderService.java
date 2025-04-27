@@ -306,6 +306,31 @@ public class OrderService {
         return orderMapper.toDTO(orderEntity);
     }
 
+    public OrderDTO unassignOrderFromCurrentDeliveryAgent(Long orderId) {
+
+        Long deliveryAgentId = SecurityUtils.getCurrentUserDetails().getId();
+
+        OrderEntity orderEntity = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RessourceNotFoundException(OrderEntity.class.getSimpleName(), orderId));
+
+        // Vérifier si la commande est assignée
+        if (orderEntity.getDeliveryAgentId() == null) {
+            throw new RessourceNotFoundException("Order is not assigned to any delivery agent.");
+        }
+
+        if (!orderEntity.getDeliveryAgentId().equals(deliveryAgentId)) {
+            throw new AlreadyAssignedException("You are not assigned to this order.");
+        }
+
+        // Déssasigner
+        orderEntity.setDeliveryAgentId(null);
+
+        orderRepository.save(orderEntity);
+
+        return orderMapper.toDTO(orderEntity);
+    }
+
+
     private void handleStatusSpecificActions(OrderEntity order, StatusEnum newStatus) {
         switch (newStatus) {
             case delivered -> handleDeliveredStatus(order);
