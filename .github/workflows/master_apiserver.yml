@@ -2,9 +2,9 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ main, Test_final ] # Déclenche sur push vers main ou Test_final
+    branches: [ master, Test_final ] # Déclenche sur push vers main ou Test_final
   pull_request:
-    branches: [ main, Test_final ] # Déclenche sur pull requests vers main ou Test_final
+    branches: [ master, Test_final ] # Déclenche sur pull requests vers main ou Test_final
 
 jobs:
   build:
