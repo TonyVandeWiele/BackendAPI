@@ -2,24 +2,24 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ master, Test_final ] # Déclenche sur push vers main ou Test_final
+    branches: [ master, Test_final ]
   pull_request:
-    branches: [ master, Test_final ] # Déclenche sur pull requests vers main ou Test_final
+    branches: [ master, Test_final ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Test_final
       uses: actions/checkout@v4
       with:
-        ref: Test_final # Force le checkout de la branche Test_final pour exécuter les tests
+        ref: Test_final
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: '17' # Ajustez selon la version de Java utilisée
+        java-version: '21'
         distribution: 'temurin'
 
     - name: Cache Maven dependencies
@@ -31,4 +31,23 @@ jobs:
           ${{ runner.os }}-maven-
 
     - name: Run tests with Maven
-      run: mvn -B test --file pom.xml # Exécute uniquement les tests
+      run: mvn -B test --file pom.xml -Ptest
+
+    - name: Generate JaCoCo coverage report
+      run: mvn jacoco:report
+
+    - name: Upload Surefire test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: surefire-reports
+        path: target/surefire-reports/
+        retention-days: 7
+
+    - name: Upload JaCoCo coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: target/site/jacoco/
+        retention-days: 7
